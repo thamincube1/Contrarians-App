@@ -42,34 +42,36 @@ export default function Vacancy() {
   return (
     <div>
       <StatRow stats={stats} />
-      <table className="table">
-        <thead>
-          <tr style={{ background: "#eae9e9" }}>
-            <th className="pl-[22px]">Unit</th>
-            <th>Property</th>
-            <th>Status</th>
-            <th className="text-right">Vacant since</th>
-            <th className="text-right">Days</th>
-            <th className="text-right">Rent lost</th>
-            <th className="pr-[22px]">Ready to let</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.unit.id}>
-              <td className="tabnum pl-[22px] font-extrabold">{r.label}</td>
-              <td style={{ color: "#605d5d" }}>{r.property}</td>
-              <td>
-                <Tag label={r.status} bg={r.tagBg} fg={r.tagFg} />
-              </td>
-              <td className="tabnum text-right" style={{ color: "#605d5d" }}>{r.since}</td>
-              <td className="tabnum text-right font-extrabold">{r.days}</td>
-              <td className="tabnum text-right font-extrabold" style={{ color: "#ae1800" }}>{r.lost}</td>
-              <td className="pr-[22px]" style={{ color: "#444141" }}>{r.ready}</td>
+      <div className="surface mx-4">
+        <table className="table">
+          <thead>
+            <tr style={{ background: "#eae9e9" }}>
+              <th className="pl-[22px]">Unit</th>
+              <th>Property</th>
+              <th>Status</th>
+              <th className="text-right">Vacant since</th>
+              <th className="text-right">Days</th>
+              <th className="text-right">Rent lost</th>
+              <th className="pr-[22px]">Ready to let</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.unit.id}>
+                <td className="tabnum pl-[22px] font-extrabold">{r.label}</td>
+                <td style={{ color: "#605d5d" }}>{r.property}</td>
+                <td>
+                  <Tag label={r.status} bg={r.tagBg} fg={r.tagFg} />
+                </td>
+                <td className="tabnum text-right" style={{ color: "#605d5d" }}>{r.since}</td>
+                <td className="tabnum text-right font-extrabold">{r.days}</td>
+                <td className="tabnum text-right font-extrabold" style={{ color: "#ae1800" }}>{r.lost}</td>
+                <td className="pr-[22px]" style={{ color: "#444141" }}>{r.ready}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <div className="py-4 px-[22px] pb-[30px] text-xs" style={{ color: "#605d5d" }}>
         Status changes are written to <span style={{ fontFamily: "ui-monospace,Menlo,monospace" }}>unit_status_history</span> — that is where days-vacant and lost rent come from, not from the status column alone.
       </div>

@@ -54,15 +54,13 @@ export default function OffboardModal() {
   return (
     <div
       onClick={closeOffboard}
-      className="fixed inset-0 flex items-center justify-center p-6 z-[60]"
-      style={{ background: "rgba(32,30,29,.6)" }}
+      className="modal-backdrop fixed inset-0 flex items-center justify-center p-6 z-[60]"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-[540px] max-w-full max-h-[92vh] overflow-auto border-2"
-        style={{ background: "#f3f2f2", borderColor: "#201e1d" }}
+        className="modal-panel w-[540px] max-w-full max-h-[92vh] overflow-auto"
       >
-        <div className="py-[18px] px-[22px] pb-3.5 border-b-2" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+        <div className="py-[18px] px-[22px] pb-3.5" style={{ borderBottom: "1px solid var(--hairline)" }}>
           <div className="text-[11px] tracking-[0.08em] uppercase" style={{ color: "#ae1800" }}>
             Irreversible · landlord only
           </div>
@@ -74,9 +72,9 @@ export default function OffboardModal() {
         <div className="py-4 px-[22px]">
           <div className="text-[11px] font-extrabold tracking-[0.08em] uppercase mb-2">Exit checklist</div>
           {blockers.map((b) => (
-            <div key={b.label} className="flex gap-2.5 items-baseline py-2.5 border-t" style={{ borderColor: "rgba(32,30,29,.16)" }}>
+            <div key={b.label} className="flex gap-2.5 items-baseline py-2.5" style={{ borderTop: "1px solid var(--hairline-soft)" }}>
               <span
-                className="w-2.5 h-2.5 block mt-1.5 flex-none"
+                className="w-2.5 h-2.5 rounded-full block mt-1.5 flex-none"
                 style={{ background: b.ok ? "#201e1d" : "#ec3013" }}
               />
               <div className="flex-1">
@@ -100,10 +98,10 @@ export default function OffboardModal() {
                   type="button"
                   onClick={() => setPurge(m.key)}
                   className="btn flex gap-2.5 p-3 border"
-                  style={{ background: active ? "#eae9e9" : "transparent", borderColor: active ? "#201e1d" : "rgba(32,30,29,.3)" }}
+                  style={{ background: active ? "#eae9e9" : "transparent", borderColor: active ? "#201e1d" : "var(--hairline)" }}
                 >
                   <span
-                    className="w-3.5 h-3.5 border block mt-1 flex-none"
+                    className="w-3.5 h-3.5 rounded-full border block mt-1 flex-none"
                     style={{ borderColor: "#201e1d", background: active ? "#ec3013" : "transparent" }}
                   />
                   <span>
@@ -127,7 +125,7 @@ export default function OffboardModal() {
             />
           </label>
         </div>
-        <div className="py-3.5 px-[22px] pb-5 border-t flex gap-2 items-center" style={{ borderColor: "rgba(32,30,29,.25)" }}>
+        <div className="py-3.5 px-[22px] pb-5 flex gap-2 items-center" style={{ borderTop: "1px solid var(--hairline)" }}>
           <button
             type="button"
             onClick={confirmOffboard}

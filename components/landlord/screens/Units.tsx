@@ -19,10 +19,7 @@ export default function Units() {
 
   return (
     <div>
-      <div
-        className="flex items-center gap-3 flex-wrap py-3.5 px-[22px] border-b"
-        style={{ borderColor: "rgba(32,30,29,.18)" }}
-      >
+      <div className="flex items-center gap-3 flex-wrap p-4">
         <input
           value={state.query}
           onChange={(e) => setQuery(e.target.value)}
@@ -30,7 +27,7 @@ export default function Units() {
           className="input"
           style={{ minWidth: 260, width: "auto", background: "#f8f4f4" }}
         />
-        <div className="flex border" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+        <div className="segmented">
           {FILTERS.map((f) => {
             const active = state.filter === f;
             return (
@@ -38,9 +35,8 @@ export default function Units() {
                 key={f}
                 type="button"
                 onClick={() => setFilter(f)}
-                className="btn text-[13px] px-[13px] py-2 border-r"
+                className="btn seg-btn text-[13px] px-[13px] py-2"
                 style={{
-                  borderColor: "rgba(32,30,29,.25)",
                   background: active ? "#201e1d" : "transparent",
                   color: active ? "#f3f2f2" : "#201e1d",
                 }}
@@ -54,47 +50,49 @@ export default function Units() {
           {rows.length} of {all.length} units
         </div>
       </div>
-      <table className="table">
-        <thead>
-          <tr style={{ background: "#eae9e9" }}>
-            <th className="pl-[22px]">Unit</th>
-            <th>Property</th>
-            <th>Tenant</th>
-            <th className="text-right">Rent</th>
-            <th className="text-right">Balance</th>
-            <th className="pr-[22px]">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {shown.map((u) => {
-            const vac = vacantOf(u);
-            const b = vac ? 0 : balanceOf(u);
-            const status = vac ? "Vacant" : u.notice ? "On notice" : b > 0 ? "In arrears" : "Occupied";
-            const tagBg = vac ? "#ec3013" : b > 0 ? "#ffc4b8" : "#eae9e9";
-            const tagFg = vac ? "#f3f2f2" : b > 0 ? "#7c1405" : "#444141";
-            return (
-              <tr
-                key={u.id}
-                className="cursor-pointer"
-                onClick={() => (vac ? undefined : openTenant(u.id))}
-              >
-                <td className="tabnum pl-[22px] font-extrabold">{u.label}</td>
-                <td style={{ color: "#605d5d" }}>{u.property}</td>
-                <td className="font-semibold" style={{ color: vac ? "#9b9797" : "#201e1d" }}>
-                  {vac ? "— vacant —" : u.tenant}
-                </td>
-                <td className="tabnum text-right">{R(u.rent)}</td>
-                <td className="tabnum text-right font-extrabold" style={{ color: b > 0 ? "#ae1800" : "#9b9797" }}>
-                  {vac ? "—" : b > 0 ? R(b) : "—"}
-                </td>
-                <td className="pr-[22px]">
-                  <Tag label={status} bg={tagBg} fg={tagFg} />
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="surface mx-4">
+        <table className="table">
+          <thead>
+            <tr style={{ background: "#eae9e9" }}>
+              <th className="pl-[22px]">Unit</th>
+              <th>Property</th>
+              <th>Tenant</th>
+              <th className="text-right">Rent</th>
+              <th className="text-right">Balance</th>
+              <th className="pr-[22px]">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shown.map((u) => {
+              const vac = vacantOf(u);
+              const b = vac ? 0 : balanceOf(u);
+              const status = vac ? "Vacant" : u.notice ? "On notice" : b > 0 ? "In arrears" : "Occupied";
+              const tagBg = vac ? "#ec3013" : b > 0 ? "#ffc4b8" : "#eae9e9";
+              const tagFg = vac ? "#f3f2f2" : b > 0 ? "#7c1405" : "#444141";
+              return (
+                <tr
+                  key={u.id}
+                  className="cursor-pointer"
+                  onClick={() => (vac ? undefined : openTenant(u.id))}
+                >
+                  <td className="tabnum pl-[22px] font-extrabold">{u.label}</td>
+                  <td style={{ color: "#605d5d" }}>{u.property}</td>
+                  <td className="font-semibold" style={{ color: vac ? "#9b9797" : "#201e1d" }}>
+                    {vac ? "— vacant —" : u.tenant}
+                  </td>
+                  <td className="tabnum text-right">{R(u.rent)}</td>
+                  <td className="tabnum text-right font-extrabold" style={{ color: b > 0 ? "#ae1800" : "#9b9797" }}>
+                    {vac ? "—" : b > 0 ? R(b) : "—"}
+                  </td>
+                  <td className="pr-[22px]">
+                    <Tag label={status} bg={tagBg} fg={tagFg} />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       <div className="py-4 px-[22px] pb-[30px] text-xs" style={{ color: "#605d5d" }}>
         {shown.length < rows.length
           ? `Showing ${shown.length} of ${rows.length} — the real table pages server-side.`

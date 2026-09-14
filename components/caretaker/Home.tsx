@@ -16,7 +16,7 @@ export default function Home() {
 
   return (
     <div className="flex-1" style={{ background: "#f3f2f2" }}>
-      <div className="py-[18px] px-4 border-b-2" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+      <div className="py-[18px] px-4" style={{ borderBottom: "1px solid var(--hairline)" }}>
         <div className="text-[11px] tracking-[0.08em] uppercase" style={{ color: "#605d5d" }}>
           Wednesday 2 September
         </div>
@@ -40,27 +40,29 @@ export default function Home() {
         </button>
       </div>
       <div className="py-3.5 px-4 pb-1.5 text-[11px] font-extrabold tracking-[0.08em] uppercase">My tickets</div>
-      {tickets.map((t) => {
-        const [tagBg, tagFg] = STATUS_TAG[t.status];
-        return (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => openTicket(t.id)}
-            className="btn block w-full text-left px-4 py-[13px] border-t"
-            style={{ borderColor: "rgba(32,30,29,.18)", minHeight: 56 }}
-          >
-            <div className="flex justify-between gap-2 items-baseline">
-              <span className="text-base font-extrabold tracking-tight">{t.unit}</span>
-              <Tag label={t.status} bg={tagBg} fg={tagFg} />
-            </div>
-            <div className="text-sm mt-0.5">{t.title}</div>
-            <div className="text-xs mt-px" style={{ color: "#605d5d" }}>
-              {t.meta} · via {t.via}
-            </div>
-          </button>
-        );
-      })}
+      <div className="grid gap-2 px-4 pb-4">
+        {tickets.map((t) => {
+          const [tagBg, tagFg] = STATUS_TAG[t.status];
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => openTicket(t.id)}
+              className="btn card block w-full text-left px-4 py-[13px]"
+              style={{ minHeight: 56 }}
+            >
+              <div className="flex justify-between gap-2 items-baseline">
+                <span className="text-base font-extrabold tracking-tight">{t.unit}</span>
+                <Tag label={t.status} bg={tagBg} fg={tagFg} />
+              </div>
+              <div className="text-sm mt-0.5">{t.title}</div>
+              <div className="text-xs mt-px" style={{ color: "#605d5d" }}>
+                {t.meta} · via {t.via}
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

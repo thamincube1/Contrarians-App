@@ -22,7 +22,7 @@ export default function InspectionForm() {
 
   return (
     <div className="flex-1" style={{ background: "#f3f2f2" }}>
-      <div className="py-3.5 px-4 border-b-2 flex justify-between items-center" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+      <div className="py-3.5 px-4 flex justify-between items-center" style={{ borderBottom: "1px solid var(--hairline)" }}>
         <div className="text-xl font-extrabold tracking-tight">New inspection</div>
         <button type="button" onClick={ctBack} className="btn text-[13px] p-1.5" style={{ color: "#ae1800" }}>
           Cancel
@@ -31,7 +31,7 @@ export default function InspectionForm() {
       <div className="p-4 grid gap-4">
         <div className="grid gap-1.5">
           <span className="field-label">Type</span>
-          <div className="flex border" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+          <div className="segmented">
             {TYPES.map((ty) => {
               const active = inspect.type === ty;
               return (
@@ -39,10 +39,9 @@ export default function InspectionForm() {
                   key={ty}
                   type="button"
                   onClick={() => setInspectField({ type: ty })}
-                  className="btn flex-1 text-left text-sm px-3 py-3 border-r"
+                  className="btn seg-btn flex-1 text-left text-sm px-3 py-3"
                   style={{
                     minHeight: 48,
-                    borderColor: "rgba(32,30,29,.25)",
                     background: active ? "#201e1d" : "transparent",
                     color: active ? "#f3f2f2" : "#201e1d",
                   }}
@@ -66,7 +65,7 @@ export default function InspectionForm() {
         </div>
         <div className="grid gap-1.5">
           <span className="field-label">Condition</span>
-          <div className="flex border" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+          <div className="segmented">
             {CONDITIONS.map((c) => {
               const active = inspect.condition === c;
               return (
@@ -74,10 +73,9 @@ export default function InspectionForm() {
                   key={c}
                   type="button"
                   onClick={() => setInspectField({ condition: c })}
-                  className="btn flex-1 text-left text-[13px] px-2.5 py-[11px] border-r"
+                  className="btn seg-btn flex-1 text-left text-[13px] px-2.5 py-[11px]"
                   style={{
                     minHeight: 44,
-                    borderColor: "rgba(32,30,29,.25)",
                     background: active ? (c === "Damage noted" ? "#ec3013" : "#201e1d") : "transparent",
                     color: active ? "#f3f2f2" : "#201e1d",
                   }}
@@ -113,7 +111,7 @@ export default function InspectionForm() {
               type="button"
               onClick={addInspectPhoto}
               className="btn flex items-end p-1.5 text-xs font-extrabold border-2"
-              style={{ width: 88, height: 88, borderColor: "#201e1d" }}
+              style={{ width: 88, height: 88, borderColor: "rgba(32,30,29,.4)", borderStyle: "dashed", borderRadius: 10 }}
             >
               Camera +
             </button>

@@ -13,7 +13,7 @@ export default function TicketDetail() {
 
   return (
     <div className="flex-1" style={{ background: "#f3f2f2" }}>
-      <div className="py-3.5 px-4 border-b-2 flex justify-between items-center" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+      <div className="py-3.5 px-4 flex justify-between items-center" style={{ borderBottom: "1px solid var(--hairline)" }}>
         <div>
           <div className="text-[11px]" style={{ fontFamily: "ui-monospace,Menlo,monospace", color: "#605d5d" }}>{ticket.id}</div>
           <div className="text-xl font-extrabold tracking-tight">{ticket.unit} · {property}</div>
@@ -51,10 +51,10 @@ export default function TicketDetail() {
                   minHeight: 48,
                   background: isNow ? "#201e1d" : "#f8f4f4",
                   color: isNow ? "#f3f2f2" : "#201e1d",
-                  borderColor: "rgba(32,30,29,.3)",
+                  borderColor: "var(--hairline)",
                 }}
               >
-                <span className="w-3 h-3 block" style={{ background: isNow ? "#ec3013" : "#bab6b6" }} />
+                <span className="w-3 h-3 rounded-full block" style={{ background: isNow ? "#ec3013" : "#bab6b6" }} />
                 <span className="text-[15px] font-extrabold">{s}</span>
                 <span className="ml-auto text-xs font-semibold">{isNow ? "current" : ""}</span>
               </button>

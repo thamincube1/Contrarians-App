@@ -21,15 +21,17 @@ export default function LandlordShell() {
       <Sidebar />
       <main className="min-w-0">
         <ScreenHeader />
-        {state.screen === "dashboard" && <Dashboard />}
-        {state.screen === "vacancy" && <Vacancy />}
-        {state.screen === "units" && <Units />}
-        {state.screen === "tickets" && <Maintenance />}
-        {state.screen === "electricity" && <Electricity />}
-        {state.screen === "inspections" && <Inspections />}
-        {state.screen === "levies" && <Levies />}
-        {state.screen === "tenant" && <TenantRecord />}
-        {state.screen === "staff" && <Staff />}
+        <div key={state.screen} className="animate-in">
+          {state.screen === "dashboard" && <Dashboard />}
+          {state.screen === "vacancy" && <Vacancy />}
+          {state.screen === "units" && <Units />}
+          {state.screen === "tickets" && <Maintenance />}
+          {state.screen === "electricity" && <Electricity />}
+          {state.screen === "inspections" && <Inspections />}
+          {state.screen === "levies" && <Levies />}
+          {state.screen === "tenant" && <TenantRecord />}
+          {state.screen === "staff" && <Staff />}
+        </div>
       </main>
     </div>
   );

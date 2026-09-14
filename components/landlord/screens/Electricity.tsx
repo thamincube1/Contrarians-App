@@ -44,21 +44,21 @@ export default function Electricity() {
   return (
     <div>
       <StatRow stats={stats} />
-      <div className="grid" style={{ gridTemplateColumns: "minmax(0,1fr) 340px" }}>
-        <section className="border-r-2" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+      <div className="grid gap-3 px-4 pb-4" style={{ gridTemplateColumns: "minmax(0,1fr) 340px" }}>
+        <section className="surface">
           <div className="py-4 px-[22px] pb-2">
             <h2 className="text-xs font-extrabold tracking-[0.08em] uppercase">Purchase ledger</h2>
           </div>
           <table className="table">
             <thead>
               <tr>
-                <th className="pl-[22px] border-b" style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>Date</th>
-                <th style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>Unit</th>
-                <th style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>Token</th>
-                <th className="text-right" style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>Amount</th>
-                <th className="text-right" style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>kWh</th>
-                <th className="text-right" style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>c/kWh</th>
-                <th className="pr-[22px]" style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>Recharge</th>
+                <th className="pl-[22px]" style={{ color: "#605d5d" }}>Date</th>
+                <th style={{ color: "#605d5d" }}>Unit</th>
+                <th style={{ color: "#605d5d" }}>Token</th>
+                <th className="text-right" style={{ color: "#605d5d" }}>Amount</th>
+                <th className="text-right" style={{ color: "#605d5d" }}>kWh</th>
+                <th className="text-right" style={{ color: "#605d5d" }}>c/kWh</th>
+                <th className="pr-[22px]" style={{ color: "#605d5d" }}>Recharge</th>
               </tr>
             </thead>
             <tbody>
@@ -79,8 +79,8 @@ export default function Electricity() {
             Rows tinted red sit outside their meter&apos;s usual rate band — usually a mistyped kWh figure, occasionally a failing meter. Duplicate token numbers are rejected on entry.
           </div>
         </section>
-        <section style={{ background: "#eae9e9" }}>
-          <div className="py-4 px-5 pb-2.5 border-b" style={{ borderColor: "rgba(32,30,29,.25)" }}>
+        <section className="surface" style={{ background: "#eae9e9" }}>
+          <div className="py-4 px-5 pb-2.5" style={{ borderBottom: "1px solid var(--hairline-soft)" }}>
             <h2 className="text-xs font-extrabold tracking-[0.08em] uppercase">Capture a purchase</h2>
             <div className="text-xs mt-[3px]" style={{ color: "#605d5d" }}>Single entry. Batch mode takes twenty rows at once.</div>
           </div>
@@ -134,7 +134,7 @@ export default function Electricity() {
               className="btn flex items-center gap-2.5 p-0.5"
             >
               <span
-                className="w-4 h-4 border block"
+                className="w-[18px] h-[18px] rounded-[6px] border block"
                 style={{ borderColor: "rgba(32,30,29,.5)", background: state.elec.recharge ? "#ec3013" : "transparent" }}
               />
               <span className="text-[13px] font-semibold">Recharge to tenant on next invoice</span>

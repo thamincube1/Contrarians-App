@@ -20,9 +20,9 @@ export default function DesignNotes() {
         Design notes — caretaker shell
       </div>
       <h2 className="text-[22px] font-extrabold tracking-tight my-1.5 mb-3.5">Built for one hand, one bar of signal</h2>
-      <div className="grid border-t-2" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+      <div className="grid" style={{ borderTop: "1px solid var(--hairline)" }}>
         {NOTES.map((n) => (
-          <div key={n.title} className="py-2.5 border-b" style={{ borderColor: "rgba(32,30,29,.2)" }}>
+          <div key={n.title} className="py-2.5" style={{ borderBottom: "1px solid var(--hairline-soft)" }}>
             <div className="text-sm font-extrabold">{n.title}</div>
             <div className="text-[13px]" style={{ color: "#444141" }}>{n.body}</div>
           </div>

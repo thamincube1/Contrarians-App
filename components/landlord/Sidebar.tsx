@@ -32,8 +32,11 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="border-r-2 py-5" style={{ borderColor: "rgba(32,30,29,.4)" }}>
-      <nav className="flex flex-col">
+    <aside
+      className="chrome-blur py-5 sticky top-[51px] self-start"
+      style={{ borderRight: "1px solid var(--hairline)", height: "calc(100vh - 51px)", overflowY: "auto" }}
+    >
+      <nav className="flex flex-col gap-0.5 px-3">
         {NAV.map((item) => {
           const active = state.screen === item.id;
           return (
@@ -41,8 +44,11 @@ export default function Sidebar() {
               key={item.id}
               type="button"
               onClick={() => goScreen(item.id)}
-              className="btn flex items-baseline justify-between gap-2 py-2.5 px-5"
-              style={{ fontWeight: active ? 800 : 600 }}
+              className="btn flex items-baseline justify-between gap-2 py-2.5 px-3.5"
+              style={{
+                fontWeight: active ? 800 : 600,
+                background: active ? "rgba(236,48,19,0.1)" : "transparent",
+              }}
             >
               <span className="text-sm" style={{ color: active ? "#ec3013" : "#605d5d", fontWeight: active ? 800 : 600 }}>
                 {item.label}
@@ -55,8 +61,8 @@ export default function Sidebar() {
         })}
       </nav>
       <div
-        className="mx-5 mt-5 pt-3.5 border-t-2 text-xs"
-        style={{ borderColor: "rgba(32,30,29,.4)", color: "#605d5d" }}
+        className="mx-5 mt-5 pt-3.5 text-xs"
+        style={{ borderTop: "1px solid var(--hairline)", color: "#605d5d" }}
       >
         <div className="font-extrabold text-[13px]" style={{ color: "#201e1d" }}>
           M. Brandt

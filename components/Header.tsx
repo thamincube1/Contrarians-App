@@ -13,14 +13,14 @@ export default function Header() {
 
   return (
     <div
-      className="flex items-center border-b-2 sticky top-0 z-40"
-      style={{ borderColor: "rgba(32,30,29,.4)", background: "#eae9e9" }}
+      className="chrome-blur flex items-center sticky top-0 z-40"
+      style={{ borderBottom: "1px solid var(--hairline)", boxShadow: "var(--shadow-xs)" }}
     >
       <div
         className="flex items-center gap-2.5 py-3 px-5 border-r"
-        style={{ borderColor: "rgba(32,30,29,.25)" }}
+        style={{ borderColor: "var(--hairline-soft)" }}
       >
-        <div className="w-3.5 h-3.5" style={{ background: "#ec3013" }} />
+        <div className="w-3.5 h-3.5 rounded-[4px]" style={{ background: "#ec3013" }} />
         <div className="font-extrabold text-[15px] tracking-tight">HAUSWERK</div>
         <div className="text-[11px] tracking-[0.08em] uppercase" style={{ color: "#605d5d" }}>
           Internal ops
@@ -30,7 +30,7 @@ export default function Header() {
         <span className="text-[11px] tracking-[0.08em] uppercase" style={{ color: "#605d5d" }}>
           Signed in as
         </span>
-        <div className="flex border" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+        <div className="segmented">
           {ROLES.map((r) => {
             const active = state.role === r.id;
             return (
@@ -38,9 +38,8 @@ export default function Header() {
                 key={r.id}
                 type="button"
                 onClick={() => setRole(r.id)}
-                className="btn text-[13px] px-3.5 py-1.5 border-r"
+                className="btn seg-btn text-[13px] px-3.5 py-1.5"
                 style={{
-                  borderColor: "rgba(32,30,29,.25)",
                   background: active ? "#201e1d" : "transparent",
                   color: active ? "#f3f2f2" : "#201e1d",
                 }}

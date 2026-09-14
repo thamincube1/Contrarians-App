@@ -17,18 +17,18 @@ export default function Levies() {
   return (
     <div>
       <StatRow stats={stats} />
-      <div className="grid" style={{ gridTemplateColumns: "minmax(0,1fr) 340px" }}>
-        <section className="border-r-2" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+      <div className="grid gap-3 px-4 pb-4" style={{ gridTemplateColumns: "minmax(0,1fr) 340px" }}>
+        <section className="surface">
           <div className="py-4 px-[22px] pb-2">
             <h2 className="text-xs font-extrabold tracking-[0.08em] uppercase">Levy ledger</h2>
           </div>
           <table className="table">
             <thead>
               <tr>
-                <th className="pl-[22px] border-b" style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>Month</th>
-                <th style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>Property</th>
-                <th className="text-right" style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>Amount</th>
-                <th className="pr-[22px]" style={{ borderColor: "rgba(32,30,29,.18)", color: "#605d5d" }}>Note</th>
+                <th className="pl-[22px]" style={{ color: "#605d5d" }}>Month</th>
+                <th style={{ color: "#605d5d" }}>Property</th>
+                <th className="text-right" style={{ color: "#605d5d" }}>Amount</th>
+                <th className="pr-[22px]" style={{ color: "#605d5d" }}>Note</th>
               </tr>
             </thead>
             <tbody>
@@ -46,14 +46,14 @@ export default function Levies() {
             Levies are captured per property, not per unit, and roll into the monthly landlord statement alongside rent and electricity.
           </div>
         </section>
-        <section style={{ background: "#eae9e9" }}>
-          <div className="py-4 px-5 pb-2.5 border-b" style={{ borderColor: "rgba(32,30,29,.25)" }}>
+        <section className="surface" style={{ background: "#eae9e9" }}>
+          <div className="py-4 px-5 pb-2.5" style={{ borderBottom: "1px solid var(--hairline-soft)" }}>
             <h2 className="text-xs font-extrabold tracking-[0.08em] uppercase">Capture a levy</h2>
           </div>
           <div className="py-4 px-5 grid gap-3">
             <div className="grid gap-1.5">
               <span className="field-label">Property</span>
-              <div className="flex border" style={{ borderColor: "rgba(32,30,29,.4)" }}>
+              <div className="segmented">
                 {PROPS.map((p) => {
                   const active = state.levy.property === p.id;
                   return (
@@ -61,9 +61,8 @@ export default function Levies() {
                       key={p.id}
                       type="button"
                       onClick={() => setLevyField({ property: p.id })}
-                      className="btn flex-1 text-left text-[13px] px-2.5 py-2.5 border-r"
+                      className="btn seg-btn flex-1 text-left text-[13px] px-2.5 py-2.5"
                       style={{
-                        borderColor: "rgba(32,30,29,.25)",
                         background: active ? "#201e1d" : "transparent",
                         color: active ? "#f3f2f2" : "#201e1d",
                       }}

@@ -38,9 +38,9 @@ export default function TenantRecord() {
   void allInspections;
 
   return (
-    <div>
-      <div className="grid border-b-2" style={{ gridTemplateColumns: "minmax(0,1fr) 290px", borderColor: "rgba(32,30,29,.4)" }}>
-        <div className="py-5 px-[22px] pb-[22px] border-r" style={{ borderColor: "rgba(32,30,29,.18)" }}>
+    <div className="p-4">
+      <div className="surface grid mb-3" style={{ gridTemplateColumns: "minmax(0,1fr) 290px" }}>
+        <div className="py-5 px-[22px] pb-[22px]" style={{ borderRight: "1px solid var(--hairline-soft)" }}>
           <div className="flex gap-1.5 flex-wrap mb-2.5">
             {tags.map((tg, i) => (
               <Tag key={i} label={tg.label} bg={tg.bg} fg={tg.fg} />
@@ -88,30 +88,30 @@ export default function TenantRecord() {
           </div>
         </div>
       </div>
-      <div className="grid" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)" }}>
-        <section className="border-r" style={{ borderColor: "rgba(32,30,29,.18)" }}>
+      <div className="grid gap-3" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)" }}>
+        <section className="surface">
           <div className="py-4 px-[22px] pb-1.5">
             <h2 className="text-xs font-extrabold tracking-[0.08em] uppercase">Lease &amp; tenant record</h2>
           </div>
           {leaseTerms.map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-3.5 py-2.5 px-[22px] border-t text-sm" style={{ borderColor: "rgba(32,30,29,.14)" }}>
+            <div key={k} className="flex justify-between gap-3.5 py-2.5 px-[22px] text-sm" style={{ borderTop: "1px solid var(--hairline-soft)" }}>
               <span style={{ color: "#605d5d" }}>{k}</span>
               <span className="tabnum font-semibold text-right">{v}</span>
             </div>
           ))}
         </section>
-        <section>
+        <section className="surface">
           <div className="py-4 px-[22px] pb-1.5">
             <h2 className="text-xs font-extrabold tracking-[0.08em] uppercase">Electricity — last 6 purchases</h2>
           </div>
           {TENANT_ELEC_HISTORY.map((e, i) => (
-            <div key={i} className="tabnum flex justify-between gap-3.5 py-2.5 px-[22px] border-t text-sm" style={{ borderColor: "rgba(32,30,29,.14)" }}>
+            <div key={i} className="tabnum flex justify-between gap-3.5 py-2.5 px-[22px] text-sm" style={{ borderTop: "1px solid var(--hairline-soft)" }}>
               <span style={{ color: "#605d5d" }}>{e.date}</span>
               <span>{e.kwh}</span>
               <span className="font-semibold">{R(e.amount)}</span>
             </div>
           ))}
-          <div className="py-3.5 px-[22px] pb-[26px] border-t text-xs" style={{ borderColor: "rgba(32,30,29,.14)", color: "#605d5d" }}>
+          <div className="py-3.5 px-[22px] pb-[26px] text-xs" style={{ borderTop: "1px solid var(--hairline-soft)", color: "#605d5d" }}>
             Six months at an average of R 366 a month. A jump of more than 40% raises a flag on the electricity board.
           </div>
         </section>

@@ -35,8 +35,8 @@ export default function ScreenHeader() {
 
   return (
     <header
-      className="border-b-2 py-5 px-7 pb-4 flex items-end justify-between gap-5 flex-wrap"
-      style={{ borderColor: "rgba(32,30,29,.4)" }}
+      className="py-5 px-7 pb-4 flex items-end justify-between gap-5 flex-wrap animate-in"
+      style={{ borderBottom: "1px solid var(--hairline)" }}
     >
       <div>
         <div className="text-[11px] tracking-[0.08em] uppercase" style={{ color: "#605d5d" }}>
@@ -54,7 +54,7 @@ export default function ScreenHeader() {
             style={{
               background: primary ? "#ec3013" : "transparent",
               color: primary ? "#f3f2f2" : "#201e1d",
-              borderColor: primary ? "#ec3013" : "rgba(32,30,29,.4)",
+              borderColor: primary ? "#ec3013" : "var(--hairline)",
             }}
           >
             {label}
