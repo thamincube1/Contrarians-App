@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&display=swap">
+<link rel="stylesheet" href="_ds/modernist-70ebb665-aed4-4e10-865c-a8db7510a114/styles.css">
+<script src="_ds/modernist-70ebb665-aed4-4e10-865c-a8db7510a114/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:var(--color-accent-700)}
+a:hover{color:var(--color-accent-800)}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+::selection{background:color-mix(in srgb, var(--color-accent) 30%, transparent)}
+input,button,textarea,select{font-family:inherit}
+</style>
+</helmet>
+
+<div style="display:flex;align-items:center;gap:0;border-bottom:2px solid rgba(32,30,29,.4);background:#eae9e9;position:sticky;top:0;z-index:40">
+<div style="display:flex;align-items:center;gap:10px;padding:12px 20px;border-right:1px solid rgba(32,30,29,.25)">
+<div style="width:14px;height:14px;background:#ec3013"></div>
+<div style="font-weight:800;font-size:15px;letter-spacing:-.02em">HAUSWERK</div>
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">Internal ops</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding:0 20px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">Signed in as</span>
+<div style="display:flex;border:1px solid rgba(32,30,29,.4)">
+<sc-for list="{{ roles }}" as="r" hint-placeholder-count="2">
+<button type="button" onClick="{{ r.go }}" style="all:unset;cursor:pointer;font-size:13px;font-weight:800;padding:7px 14px;border-right:1px solid rgba(32,30,29,.25);background:{{ r.bg }};color:{{ r.fg }}" style-hover="background:rgba(32,30,29,.08)">{{ r.label }}</button>
+</sc-for>
+</div>
+<span style="font-size:12px;color:#605d5d">{{ roleNote }}</span>
+</div>
+</div>
+
+<sc-if value="{{ isLandlord }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:224px minmax(0,1fr);min-height:calc(100vh - 51px)">
+
+<aside style="border-right:2px solid rgba(32,30,29,.4);padding:20px 0">
+<nav style="display:flex;flex-direction:column">
+<sc-for list="{{ nav }}" as="item" hint-placeholder-count="7">
+<button type="button" onClick="{{ item.go }}" style="all:unset;cursor:pointer;display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:10px 20px" style-hover="background:rgba(32,30,29,.06)">
+<span style="font-size:14px;font-weight:{{ item.weight }};color:{{ item.color }}">{{ item.label }}</span>
+<span style="font-size:11px;font-variant-numeric:tabular-nums;color:{{ item.badgeColor }}">{{ item.badge }}</span>
+</button>
+</sc-for>
+</nav>
+<div style="margin:20px 20px 0;padding-top:14px;border-top:2px solid rgba(32,30,29,.4);font-size:12px;color:#605d5d">
+<div style="font-weight:800;color:#201e1d;font-size:13px">M. Brandt</div>
+Landlord · full access
+</div>
+</aside>
+
+<main style="min-width:0">
+<header style="border-bottom:2px solid rgba(32,30,29,.4);padding:20px 28px 16px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap">
+<div>
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">{{ crumb }}</div>
+<h1 style="margin:3px 0 0;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.1">{{ heading }}</h1>
+</div>
+<div style="display:flex;gap:8px">
+<sc-for list="{{ actions }}" as="a" hint-placeholder-count="2">
+<button type="button" onClick="{{ a.go }}" style="all:unset;cursor:pointer;font-weight:800;font-size:13px;padding:9px 15px;background:{{ a.bg }};color:{{ a.fg }};border:1px solid {{ a.border }}" style-hover="background:rgba(32,30,29,.08)">{{ a.label }}</button>
+</sc-for>
+</div>
+</header>
+
+<sc-if value="{{ atDashboard }}" hint-placeholder-val="{{ true }}">
+<div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:2px solid rgba(32,30,29,.4)">
+<sc-for list="{{ metrics }}" as="m" hint-placeholder-count="4">
+<div style="padding:18px 22px 20px;border-right:1px solid rgba(32,30,29,.18)">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">{{ m.label }}</div>
+<div style="font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin-top:6px;font-variant-numeric:tabular-nums;color:{{ m.tone }}">{{ m.value }}</div>
+<div style="font-size:12px;color:#605d5d">{{ m.note }}</div>
+</div>
+</sc-for>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+<section style="border-right:2px solid rgba(32,30,29,.4)">
+<div style="padding:18px 22px 8px;display:flex;align-items:baseline;justify-content:space-between">
+<h2 style="margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Occupancy by property</h2>
+<button type="button" onClick="{{ goVacancy }}" style="all:unset;cursor:pointer;font-size:12px;font-weight:800;color:#ae1800" style-hover="text-decoration:underline">Vacancy board →</button>
+</div>
+<sc-for list="{{ occupancy }}" as="o" hint-placeholder-count="3">
+<div style="padding:12px 22px 16px;border-top:1px solid rgba(32,30,29,.18)">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+<div style="font-size:16px;font-weight:800;letter-spacing:-.01em">{{ o.name }}</div>
+<div style="font-size:13px;color:#605d5d;font-variant-numeric:tabular-nums">{{ o.detail }}</div>
+</div>
+<div style="display:flex;gap:3px;margin-top:9px">
+<sc-for list="{{ o.cells }}" as="c" hint-placeholder-count="26">
+<div style="flex:1;height:16px;background:{{ c.bg }}"></div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+<div style="padding:12px 22px 18px;border-top:1px solid rgba(32,30,29,.18);display:flex;gap:16px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#605d5d">
+<span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#201e1d;display:block"></span>Occupied</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#ec3013;display:block"></span>Vacant</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;background:#bab6b6;display:block"></span>On notice</span>
+</div>
+</section>
+<section>
+<div style="padding:18px 22px 8px"><h2 style="margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Caretaker activity — today</h2></div>
+<sc-for list="{{ activity }}" as="a" hint-placeholder-count="5">
+<div style="padding:11px 22px;border-top:1px solid rgba(32,30,29,.18);display:flex;gap:12px;align-items:baseline">
+<div style="font-size:12px;color:#605d5d;font-variant-numeric:tabular-nums;min-width:52px">{{ a.time }}</div>
+<div style="flex:1">
+<div style="font-size:14px;font-weight:600">{{ a.what }}</div>
+<div style="font-size:12px;color:#605d5d">{{ a.who }}</div>
+</div>
+<span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:3px 7px;background:{{ a.tagBg }};color:{{ a.tagFg }};white-space:nowrap">{{ a.tag }}</span>
+</div>
+</sc-for>
+<div style="padding:18px 22px 8px;border-top:2px solid rgba(32,30,29,.4)"><h2 style="margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Electricity — this month</h2></div>
+<sc-for list="{{ elecSummary }}" as="e" hint-placeholder-count="3">
+<div style="padding:11px 22px;border-top:1px solid rgba(32,30,29,.18);display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums">
+<span style="font-size:14px;font-weight:600">{{ e.name }}</span>
+<span style="font-size:14px;color:#444141">{{ e.detail }}</span>
+</div>
+</sc-for>
+<div style="padding:14px 22px 24px;border-top:1px solid rgba(32,30,29,.18)">
+<button type="button" onClick="{{ goElectricity }}" style="all:unset;cursor:pointer;font-size:13px;font-weight:800;color:#ae1800" style-hover="text-decoration:underline">Capture purchases →</button>
+</div>
+</section>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atVacancy }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:2px solid rgba(32,30,29,.4)">
+<sc-for list="{{ vacancyStats }}" as="v" hint-placeholder-count="4">
+<div style="padding:18px 22px 20px;border-right:1px solid rgba(32,30,29,.18)">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">{{ v.label }}</div>
+<div style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums;color:{{ v.tone }}">{{ v.value }}</div>
+<div style="font-size:12px;color:#605d5d">{{ v.note }}</div>
+</div>
+</sc-for>
+</div>
+<table style="width:100%;border-collapse:collapse;font-size:14px">
+<thead>
+<tr style="background:#eae9e9">
+<th style="text-align:left;padding:9px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Unit</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Property</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Status</th>
+<th style="text-align:right;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Vacant since</th>
+<th style="text-align:right;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Days</th>
+<th style="text-align:right;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Rent lost</th>
+<th style="text-align:left;padding:9px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Ready to let</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ vacantRows }}" as="v" hint-placeholder-count="6">
+<tr style="border-bottom:1px solid rgba(32,30,29,.14)">
+<td style="padding:11px 22px;font-weight:800;font-variant-numeric:tabular-nums">{{ v.label }}</td>
+<td style="padding:11px 12px;color:#605d5d">{{ v.property }}</td>
+<td style="padding:11px 12px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:3px 7px;background:{{ v.tagBg }};color:{{ v.tagFg }}">{{ v.status }}</span></td>
+<td style="padding:11px 12px;text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">{{ v.since }}</td>
+<td style="padding:11px 12px;text-align:right;font-variant-numeric:tabular-nums;font-weight:800">{{ v.days }}</td>
+<td style="padding:11px 12px;text-align:right;font-variant-numeric:tabular-nums;color:#ae1800;font-weight:800">{{ v.lost }}</td>
+<td style="padding:11px 22px;color:#444141">{{ v.ready }}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+<div style="padding:16px 22px 30px;font-size:12px;color:#605d5d">Status changes are written to <span style="font-family:ui-monospace,Menlo,monospace">unit_status_history</span> — that is where days-vacant and lost rent come from, not from the status column alone.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atUnits }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 22px;border-bottom:1px solid rgba(32,30,29,.18)">
+<input value="{{ query }}" onInput="{{ setQuery }}" placeholder="Search unit or tenant" style="font-size:14px;padding:8px 12px;border:1px solid rgba(32,30,29,.4);background:#f8f4f4;min-width:260px;border-radius:0"/>
+<div style="display:flex;border:1px solid rgba(32,30,29,.4)">
+<sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+<button type="button" onClick="{{ f.go }}" style="all:unset;cursor:pointer;font-size:13px;font-weight:800;padding:8px 13px;border-right:1px solid rgba(32,30,29,.25);background:{{ f.bg }};color:{{ f.fg }}" style-hover="background:rgba(32,30,29,.08)">{{ f.label }}</button>
+</sc-for>
+</div>
+<div style="margin-left:auto;font-size:13px;color:#605d5d;font-variant-numeric:tabular-nums">{{ resultCount }}</div>
+</div>
+<table style="width:100%;border-collapse:collapse;font-size:14px">
+<thead>
+<tr style="background:#eae9e9">
+<th style="text-align:left;padding:9px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Unit</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Property</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Tenant</th>
+<th style="text-align:right;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Rent</th>
+<th style="text-align:right;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Balance</th>
+<th style="text-align:left;padding:9px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Status</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ rows }}" as="u" hint-placeholder-count="12">
+<tr onClick="{{ u.go }}" style="cursor:pointer;border-bottom:1px solid rgba(32,30,29,.14)" style-hover="background:rgba(32,30,29,.05)">
+<td style="padding:11px 22px;font-weight:800;font-variant-numeric:tabular-nums">{{ u.label }}</td>
+<td style="padding:11px 12px;color:#605d5d">{{ u.property }}</td>
+<td style="padding:11px 12px;font-weight:600;color:{{ u.tenantTone }}">{{ u.tenant }}</td>
+<td style="padding:11px 12px;text-align:right;font-variant-numeric:tabular-nums">{{ u.rent }}</td>
+<td style="padding:11px 12px;text-align:right;font-variant-numeric:tabular-nums;font-weight:800;color:{{ u.balanceTone }}">{{ u.balance }}</td>
+<td style="padding:11px 22px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:3px 7px;background:{{ u.tagBg }};color:{{ u.tagFg }}">{{ u.status }}</span></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+<div style="padding:16px 22px 30px;font-size:12px;color:#605d5d">{{ pageNote }}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atElectricity }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:2px solid rgba(32,30,29,.4)">
+<sc-for list="{{ elecStats }}" as="e" hint-placeholder-count="4">
+<div style="padding:18px 22px 20px;border-right:1px solid rgba(32,30,29,.18)">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">{{ e.label }}</div>
+<div style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums;color:{{ e.tone }}">{{ e.value }}</div>
+<div style="font-size:12px;color:#605d5d">{{ e.note }}</div>
+</div>
+</sc-for>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 340px">
+<section style="border-right:2px solid rgba(32,30,29,.4)">
+<div style="padding:16px 22px 8px"><h2 style="margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Purchase ledger</h2></div>
+<table style="width:100%;border-collapse:collapse;font-size:14px">
+<thead>
+<tr>
+<th style="text-align:left;padding:8px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">Date</th>
+<th style="text-align:left;padding:8px 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">Unit</th>
+<th style="text-align:left;padding:8px 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">Token</th>
+<th style="text-align:right;padding:8px 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">Amount</th>
+<th style="text-align:right;padding:8px 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">kWh</th>
+<th style="text-align:right;padding:8px 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">c/kWh</th>
+<th style="text-align:left;padding:8px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">Recharge</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ purchases }}" as="p" hint-placeholder-count="10">
+<tr style="border-bottom:1px solid rgba(32,30,29,.12);background:{{ p.rowBg }}">
+<td style="padding:10px 22px;color:#605d5d;font-variant-numeric:tabular-nums">{{ p.date }}</td>
+<td style="padding:10px 10px;font-weight:800;font-variant-numeric:tabular-nums">{{ p.unit }}</td>
+<td style="padding:10px 10px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#605d5d">{{ p.token }}</td>
+<td style="padding:10px 10px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">{{ p.amount }}</td>
+<td style="padding:10px 10px;text-align:right;font-variant-numeric:tabular-nums">{{ p.kwh }}</td>
+<td style="padding:10px 10px;text-align:right;font-variant-numeric:tabular-nums;color:{{ p.rateTone }};font-weight:{{ p.rateWeight }}">{{ p.rate }}</td>
+<td style="padding:10px 22px;font-size:12px;color:#444141">{{ p.recharge }}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+<div style="padding:14px 22px 26px;font-size:12px;color:#605d5d">{{ anomalyNote }}</div>
+</section>
+<section style="background:#eae9e9">
+<div style="padding:16px 20px 10px;border-bottom:1px solid rgba(32,30,29,.25)">
+<h2 style="margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Capture a purchase</h2>
+<div style="font-size:12px;color:#605d5d;margin-top:3px">Single entry. Batch mode takes twenty rows at once.</div>
+</div>
+<div style="padding:16px 20px;display:grid;gap:12px">
+<label style="display:grid;gap:4px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Unit</span>
+<input value="{{ elecForm.unit }}" onInput="{{ setElecUnit }}" style="font-size:14px;padding:8px 11px;border:1px solid rgba(32,30,29,.4);background:#f3f2f2;border-radius:0;font-variant-numeric:tabular-nums"/>
+</label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<label style="display:grid;gap:4px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Amount (R)</span>
+<input value="{{ elecForm.amount }}" onInput="{{ setElecAmount }}" style="font-size:14px;padding:8px 11px;border:1px solid rgba(32,30,29,.4);background:#f3f2f2;border-radius:0;font-variant-numeric:tabular-nums"/>
+</label>
+<label style="display:grid;gap:4px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Units (kWh)</span>
+<input value="{{ elecForm.kwh }}" onInput="{{ setElecKwh }}" style="font-size:14px;padding:8px 11px;border:1px solid rgba(32,30,29,.4);background:#f3f2f2;border-radius:0;font-variant-numeric:tabular-nums"/>
+</label>
+</div>
+<label style="display:grid;gap:4px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Token number</span>
+<input value="{{ elecForm.token }}" onInput="{{ setElecToken }}" style="font-size:14px;padding:8px 11px;border:1px solid rgba(32,30,29,.4);background:#f3f2f2;border-radius:0;font-family:ui-monospace,Menlo,monospace;font-size:13px"/>
+</label>
+<div style="display:grid;gap:4px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Receipt</span>
+<div style="height:70px;background:repeating-linear-gradient(45deg,#d7d3d3 0 6px,#eae9e9 6px 12px);border:1px solid rgba(32,30,29,.3);display:flex;align-items:flex-end;padding:5px">
+<span style="font:10px/1.2 ui-monospace,Menlo,monospace;color:#605d5d">drop slip photo</span>
+</div>
+</div>
+<button type="button" onClick="{{ toggleRecharge }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:9px;padding:2px" style-hover="background:rgba(32,30,29,.06)">
+<span style="width:16px;height:16px;border:1px solid rgba(32,30,29,.5);background:{{ elecForm.rechargeBg }};display:block"></span>
+<span style="font-size:13px;font-weight:600">Recharge to tenant on next invoice</span>
+</button>
+<div style="font-size:12px;color:{{ elecForm.rateTone }};border-left:2px solid #ec3013;padding-left:9px">{{ elecForm.rateNote }}</div>
+<div style="display:flex;gap:8px">
+<button type="button" onClick="{{ saveElec }}" style="all:unset;cursor:pointer;font-weight:800;font-size:14px;padding:9px 15px;background:#ec3013;color:#f3f2f2" style-hover="background:#dd2b0f">Save purchase</button>
+<button type="button" onClick="{{ noop }}" style="all:unset;cursor:pointer;font-weight:800;font-size:14px;padding:9px 15px;border:1px solid rgba(32,30,29,.4)" style-hover="background:rgba(32,30,29,.08)">Batch mode</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atInspections }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:2px solid rgba(32,30,29,.4)">
+<sc-for list="{{ inspectionStats }}" as="i" hint-placeholder-count="4">
+<div style="padding:18px 22px 20px;border-right:1px solid rgba(32,30,29,.18)">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">{{ i.label }}</div>
+<div style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums;color:{{ i.tone }}">{{ i.value }}</div>
+<div style="font-size:12px;color:#605d5d">{{ i.note }}</div>
+</div>
+</sc-for>
+</div>
+<table style="width:100%;border-collapse:collapse;font-size:14px">
+<thead>
+<tr style="background:#eae9e9">
+<th style="text-align:left;padding:9px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Unit</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Property</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Type</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Date</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Tenant</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Condition</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Caretaker</th>
+<th style="text-align:right;padding:9px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Photos</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ inspectionRows }}" as="r" hint-placeholder-count="8">
+<tr style="border-bottom:1px solid rgba(32,30,29,.14)">
+<td style="padding:11px 22px;font-weight:800;font-variant-numeric:tabular-nums">{{ r.unit }}</td>
+<td style="padding:11px 12px;color:#605d5d">{{ r.property }}</td>
+<td style="padding:11px 12px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:3px 7px;background:{{ r.typeBg }};color:{{ r.typeFg }}">{{ r.type }}</span></td>
+<td style="padding:11px 12px;color:#605d5d;font-variant-numeric:tabular-nums">{{ r.date }}</td>
+<td style="padding:11px 12px">{{ r.tenant }}</td>
+<td style="padding:11px 12px;font-weight:600;color:{{ r.condTone }}">{{ r.condition }}</td>
+<td style="padding:11px 12px;color:#605d5d">{{ r.caretaker }}</td>
+<td style="padding:11px 22px;text-align:right;font-variant-numeric:tabular-nums">{{ r.photos }}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+<div style="padding:16px 22px 30px;font-size:12px;color:#605d5d">Move-in and move-out inspections are logged by the caretaker on-site — condition notes and photos attach to the unit's record and are checked automatically by the offboarding flow.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atLevies }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:2px solid rgba(32,30,29,.4)">
+<sc-for list="{{ levyStats }}" as="v" hint-placeholder-count="4">
+<div style="padding:18px 22px 20px;border-right:1px solid rgba(32,30,29,.18)">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">{{ v.label }}</div>
+<div style="font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums;color:{{ v.tone }}">{{ v.value }}</div>
+<div style="font-size:12px;color:#605d5d">{{ v.note }}</div>
+</div>
+</sc-for>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 340px">
+<section style="border-right:2px solid rgba(32,30,29,.4)">
+<div style="padding:16px 22px 8px"><h2 style="margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Levy ledger</h2></div>
+<table style="width:100%;border-collapse:collapse;font-size:14px">
+<thead>
+<tr>
+<th style="text-align:left;padding:8px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">Month</th>
+<th style="text-align:left;padding:8px 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">Property</th>
+<th style="text-align:right;padding:8px 10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">Amount</th>
+<th style="text-align:left;padding:8px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#605d5d;border-bottom:1px solid rgba(32,30,29,.18)">Note</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ levyRows }}" as="l" hint-placeholder-count="6">
+<tr style="border-bottom:1px solid rgba(32,30,29,.12)">
+<td style="padding:10px 22px;color:#605d5d;font-variant-numeric:tabular-nums">{{ l.month }}</td>
+<td style="padding:10px 10px;font-weight:800">{{ l.property }}</td>
+<td style="padding:10px 10px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">{{ l.amount }}</td>
+<td style="padding:10px 22px;font-size:12px;color:#444141">{{ l.note }}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+<div style="padding:14px 22px 26px;font-size:12px;color:#605d5d">Levies are captured per property, not per unit, and roll into the monthly landlord statement alongside rent and electricity.</div>
+</section>
+<section style="background:#eae9e9">
+<div style="padding:16px 20px 10px;border-bottom:1px solid rgba(32,30,29,.25)">
+<h2 style="margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Capture a levy</h2>
+</div>
+<div style="padding:16px 20px;display:grid;gap:12px">
+<div style="display:grid;gap:6px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Property</span>
+<div style="display:flex;border:1px solid rgba(32,30,29,.4)">
+<sc-for list="{{ levyForm.properties }}" as="p" hint-placeholder-count="3">
+<button type="button" onClick="{{ p.go }}" style="all:unset;cursor:pointer;flex:1;text-align:left;font-size:13px;font-weight:800;padding:9px 10px;border-right:1px solid rgba(32,30,29,.25);background:{{ p.bg }};color:{{ p.fg }}" style-hover="background:rgba(32,30,29,.08)">{{ p.label }}</button>
+</sc-for>
+</div>
+</div>
+<label style="display:grid;gap:4px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Amount (R)</span>
+<input value="{{ levyForm.amount }}" onInput="{{ setLevyAmount }}" style="font-size:14px;padding:8px 11px;border:1px solid rgba(32,30,29,.4);background:#f3f2f2;border-radius:0;font-variant-numeric:tabular-nums"/>
+</label>
+<label style="display:grid;gap:4px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Note</span>
+<input value="{{ levyForm.note }}" onInput="{{ setLevyNote }}" placeholder="e.g. Body corporate — Sep" style="font-size:14px;padding:8px 11px;border:1px solid rgba(32,30,29,.4);background:#f3f2f2;border-radius:0"/>
+</label>
+<button type="button" onClick="{{ saveLevy }}" style="all:unset;cursor:pointer;font-weight:800;font-size:14px;padding:9px 15px;background:#ec3013;color:#f3f2f2" style-hover="background:#dd2b0f">Save levy</button>
+</div>
+</section>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atTickets }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));min-height:400px">
+<sc-for list="{{ board }}" as="col" hint-placeholder-count="4">
+<div style="border-right:1px solid rgba(32,30,29,.18)">
+<div style="padding:14px 16px 10px;border-bottom:2px solid rgba(32,30,29,.4);display:flex;justify-content:space-between;align-items:baseline">
+<span style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">{{ col.label }}</span>
+<span style="font-size:12px;font-weight:800;color:#605d5d;font-variant-numeric:tabular-nums">{{ col.count }}</span>
+</div>
+<sc-for list="{{ col.items }}" as="t" hint-placeholder-count="3">
+<div style="padding:12px 16px;border-bottom:1px solid rgba(32,30,29,.18)">
+<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
+<span style="font-size:11px;font-family:ui-monospace,Menlo,monospace;color:#605d5d">{{ t.ref }}</span>
+<span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:2px 6px;background:{{ t.tagBg }};color:{{ t.tagFg }}">{{ t.priority }}</span>
+</div>
+<div style="font-size:14px;font-weight:800;letter-spacing:-.01em;margin-top:4px">{{ t.title }}</div>
+<div style="font-size:12px;color:#605d5d;margin-top:2px">{{ t.meta }}</div>
+<div style="font-size:11px;color:#605d5d;margin-top:6px;letter-spacing:.04em;text-transform:uppercase">{{ t.via }}</div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ atTenant }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 290px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="padding:20px 22px 22px;border-right:1px solid rgba(32,30,29,.18)">
+<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px">
+<sc-for list="{{ tenantTags }}" as="t" hint-placeholder-count="3">
+<span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:3px 8px;background:{{ t.bg }};color:{{ t.fg }}">{{ t.label }}</span>
+</sc-for>
+</div>
+<div style="font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.1">{{ tenant.name }}</div>
+<div style="font-size:14px;color:#605d5d;margin-top:3px">{{ tenant.contact }}</div>
+<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+<button type="button" onClick="{{ openPayment }}" style="all:unset;cursor:pointer;font-weight:800;font-size:13px;padding:8px 14px;background:#ec3013;color:#f3f2f2" style-hover="background:#dd2b0f">Record payment</button>
+<button type="button" onClick="{{ noop }}" style="all:unset;cursor:pointer;font-weight:800;font-size:13px;padding:8px 14px;border:1px solid rgba(32,30,29,.4)" style-hover="background:rgba(32,30,29,.08)">Email statement</button>
+<button type="button" onClick="{{ openOffboard }}" style="all:unset;cursor:pointer;font-weight:800;font-size:13px;padding:8px 14px;border:1px solid #ae1800;color:#ae1800" style-hover="background:rgba(236,48,19,.1)">Offboard tenant</button>
+<button type="button" onClick="{{ sendDemand }}" style="all:unset;cursor:pointer;font-weight:800;font-size:13px;padding:8px 14px;border:1px solid {{ demandBorder }};color:{{ demandColor }};opacity:{{ demandOpacity }}" style-hover="background:rgba(236,48,19,.1)">{{ demandLabel }}</button>
+<button type="button" onClick="{{ goUnits }}" style="all:unset;cursor:pointer;font-weight:800;font-size:13px;padding:8px 4px;color:#ae1800" style-hover="text-decoration:underline">← Units</button>
+</div>
+</div>
+<div style="padding:20px 22px">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">Current balance</div>
+<div style="font-size:34px;font-weight:800;letter-spacing:-.03em;margin-top:4px;font-variant-numeric:tabular-nums;color:{{ tenant.balanceTone }}">{{ tenant.balance }}</div>
+<div style="font-size:13px;color:#605d5d">{{ tenant.balanceNote }}</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+<section style="border-right:1px solid rgba(32,30,29,.18)">
+<div style="padding:16px 22px 6px"><h2 style="margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Lease &amp; tenant record</h2></div>
+<sc-for list="{{ leaseTerms }}" as="l" hint-placeholder-count="9">
+<div style="display:flex;justify-content:space-between;gap:14px;padding:9px 22px;border-top:1px solid rgba(32,30,29,.14);font-size:14px">
+<span style="color:#605d5d">{{ l.k }}</span>
+<span style="font-weight:600;text-align:right;font-variant-numeric:tabular-nums">{{ l.v }}</span>
+</div>
+</sc-for>
+</section>
+<section>
+<div style="padding:16px 22px 6px"><h2 style="margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">Electricity — last 6 purchases</h2></div>
+<sc-for list="{{ tenantElec }}" as="e" hint-placeholder-count="6">
+<div style="display:flex;justify-content:space-between;gap:14px;padding:9px 22px;border-top:1px solid rgba(32,30,29,.14);font-size:14px;font-variant-numeric:tabular-nums">
+<span style="color:#605d5d">{{ e.date }}</span>
+<span>{{ e.kwh }}</span>
+<span style="font-weight:600">{{ e.amount }}</span>
+</div>
+</sc-for>
+<div style="padding:14px 22px 26px;border-top:1px solid rgba(32,30,29,.14);font-size:12px;color:#605d5d">{{ tenantElecNote }}</div>
+</section>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ atStaff }}" hint-placeholder-val="{{ false }}">
+<div style="padding:0">
+<table style="width:100%;border-collapse:collapse;font-size:14px">
+<thead>
+<tr style="background:#eae9e9">
+<th style="text-align:left;padding:9px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Name</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Role</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Assigned properties</th>
+<th style="text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Can close tickets</th>
+<th style="text-align:left;padding:9px 22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:#444141;border-bottom:2px solid rgba(32,30,29,.4)">Last active</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ staff }}" as="s" hint-placeholder-count="3">
+<tr style="border-bottom:1px solid rgba(32,30,29,.14)">
+<td style="padding:11px 22px;font-weight:800">{{ s.name }}</td>
+<td style="padding:11px 12px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:3px 7px;background:{{ s.tagBg }};color:{{ s.tagFg }}">{{ s.role }}</span></td>
+<td style="padding:11px 12px;color:#444141">{{ s.props }}</td>
+<td style="padding:11px 12px;color:#444141">{{ s.canClose }}</td>
+<td style="padding:11px 22px;color:#605d5d;font-variant-numeric:tabular-nums">{{ s.active }}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+<div style="padding:20px 22px 30px;max-width:44em;font-size:13px;color:#444141">A caretaker sees only the properties assigned here — enforced by a row-level security policy in Postgres, not by hiding menu items. Financial columns, rent, invoices and electricity costs are not returned to their session at all.</div>
+</div>
+</sc-if>
+
+</main>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCaretaker }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:minmax(0,390px) minmax(0,1fr);gap:0;min-height:calc(100vh - 51px)">
+<div style="border-right:2px solid rgba(32,30,29,.4);background:#eae9e9;display:flex;flex-direction:column">
+<div style="padding:10px 16px;border-bottom:1px solid rgba(32,30,29,.25);display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">
+<span>Caretaker · installed to home screen</span>
+<span style="color:{{ syncTone }};font-weight:800">{{ syncLabel }}</span>
+</div>
+
+<sc-if value="{{ ctHome }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;background:#f3f2f2">
+<div style="padding:18px 16px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">Wednesday 2 September</div>
+<div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:2px">Morning, Petrus</div>
+<div style="font-size:14px;color:#444141;margin-top:2px">{{ ctSummary }}</div>
+<button type="button" onClick="{{ ctNew }}" style="all:unset;cursor:pointer;display:block;width:100%;text-align:left;font-weight:800;font-size:17px;padding:16px;background:#ec3013;color:#f3f2f2;margin-top:14px" style-hover="background:#dd2b0f">Log a repair</button>
+<button type="button" onClick="{{ ctNewInspect }}" style="all:unset;cursor:pointer;display:block;width:100%;text-align:left;font-weight:800;font-size:15px;padding:14px 16px;border:1px solid rgba(32,30,29,.4);margin-top:8px" style-hover="background:rgba(32,30,29,.08)">Log a move-in / move-out inspection</button>
+</div>
+<div style="padding:14px 16px 6px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase">My tickets</div>
+<sc-for list="{{ ctTickets }}" as="t" hint-placeholder-count="5">
+<button type="button" onClick="{{ t.go }}" style="all:unset;cursor:pointer;display:block;width:100%;padding:13px 16px;border-top:1px solid rgba(32,30,29,.18);min-height:56px" style-hover="background:rgba(32,30,29,.05)">
+<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
+<span style="font-size:16px;font-weight:800;letter-spacing:-.01em">{{ t.unit }}</span>
+<span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;padding:3px 7px;background:{{ t.tagBg }};color:{{ t.tagFg }}">{{ t.status }}</span>
+</div>
+<div style="font-size:14px;color:#201e1d;margin-top:2px">{{ t.title }}</div>
+<div style="font-size:12px;color:#605d5d;margin-top:1px">{{ t.meta }}</div>
+</button>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ ctForm }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;background:#f3f2f2">
+<div style="padding:14px 16px;border-bottom:2px solid rgba(32,30,29,.4);display:flex;justify-content:space-between;align-items:center">
+<div style="font-size:20px;font-weight:800;letter-spacing:-.02em">New repair</div>
+<button type="button" onClick="{{ ctBack }}" style="all:unset;cursor:pointer;font-size:13px;font-weight:800;color:#ae1800;padding:6px" style-hover="text-decoration:underline">Cancel</button>
+</div>
+<div style="padding:16px;display:grid;gap:16px">
+<div style="display:grid;gap:5px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Unit</span>
+<input value="{{ form.unit }}" onInput="{{ setFormUnit }}" placeholder="Type or scan unit number" style="font-size:17px;padding:12px;border:1px solid rgba(32,30,29,.4);background:#f8f4f4;border-radius:0;font-variant-numeric:tabular-nums"/>
+<div style="font-size:12px;color:#605d5d">{{ form.tenantHint }}</div>
+</div>
+<div style="display:grid;gap:6px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Category</span>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+<sc-for list="{{ categories }}" as="c" hint-placeholder-count="6">
+<button type="button" onClick="{{ c.go }}" style="all:unset;cursor:pointer;text-align:left;font-size:13px;font-weight:800;padding:14px 10px;min-height:52px;background:{{ c.bg }};color:{{ c.fg }};border:1px solid rgba(32,30,29,.3)" style-hover="background:rgba(32,30,29,.1)">{{ c.label }}</button>
+</sc-for>
+</div>
+</div>
+<div style="display:grid;gap:5px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">What is wrong</span>
+<textarea value="{{ form.desc }}" onInput="{{ setFormDesc }}" rows="3" placeholder="Paste the WhatsApp message or type it" style="font-size:15px;padding:12px;border:1px solid rgba(32,30,29,.4);background:#f8f4f4;border-radius:0;resize:vertical"></textarea>
+</div>
+<div style="display:grid;gap:6px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Photos</span>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<sc-for list="{{ form.photos }}" as="p" hint-placeholder-count="2">
+<div style="width:88px;height:88px;background:repeating-linear-gradient(45deg,#d7d3d3 0 6px,#eae9e9 6px 12px);border:1px solid rgba(32,30,29,.3);display:flex;align-items:flex-end;padding:4px">
+<span style="font:9px/1.2 ui-monospace,Menlo,monospace;color:#605d5d">{{ p.label }}</span>
+</div>
+</sc-for>
+<button type="button" onClick="{{ addPhoto }}" style="all:unset;cursor:pointer;width:88px;height:88px;border:2px solid #201e1d;display:flex;align-items:flex-end;padding:6px;font-size:12px;font-weight:800" style-hover="background:rgba(32,30,29,.08)">Camera +</button>
+</div>
+</div>
+<div style="display:grid;gap:6px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Urgency</span>
+<div style="display:flex;border:1px solid rgba(32,30,29,.4)">
+<sc-for list="{{ urgencies }}" as="u" hint-placeholder-count="3">
+<button type="button" onClick="{{ u.go }}" style="all:unset;cursor:pointer;flex:1;text-align:left;font-size:14px;font-weight:800;padding:12px;min-height:48px;border-right:1px solid rgba(32,30,29,.25);background:{{ u.bg }};color:{{ u.fg }}" style-hover="background:rgba(32,30,29,.08)">{{ u.label }}</button>
+</sc-for>
+</div>
+</div>
+<div style="display:grid;gap:6px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Reported via</span>
+<div style="display:flex;border:1px solid rgba(32,30,29,.4)">
+<sc-for list="{{ vias }}" as="v" hint-placeholder-count="3">
+<button type="button" onClick="{{ v.go }}" style="all:unset;cursor:pointer;flex:1;text-align:left;font-size:13px;font-weight:800;padding:11px;min-height:44px;border-right:1px solid rgba(32,30,29,.25);background:{{ v.bg }};color:{{ v.fg }}" style-hover="background:rgba(32,30,29,.08)">{{ v.label }}</button>
+</sc-for>
+</div>
+</div>
+<button type="button" onClick="{{ submitTicket }}" style="all:unset;cursor:pointer;display:block;width:100%;text-align:left;font-weight:800;font-size:17px;padding:16px;background:#ec3013;color:#f3f2f2;margin-top:4px" style-hover="background:#dd2b0f">{{ submitLabel }}</button>
+<div style="font-size:12px;color:#605d5d">No cost or rent fields here — a caretaker session never receives them.</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ ctInspectForm }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;background:#f3f2f2">
+<div style="padding:14px 16px;border-bottom:2px solid rgba(32,30,29,.4);display:flex;justify-content:space-between;align-items:center">
+<div style="font-size:20px;font-weight:800;letter-spacing:-.02em">New inspection</div>
+<button type="button" onClick="{{ ctBack }}" style="all:unset;cursor:pointer;font-size:13px;font-weight:800;color:#ae1800;padding:6px" style-hover="text-decoration:underline">Cancel</button>
+</div>
+<div style="padding:16px;display:grid;gap:16px">
+<div style="display:grid;gap:6px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Type</span>
+<div style="display:flex;border:1px solid rgba(32,30,29,.4)">
+<sc-for list="{{ inspectTypes }}" as="ty" hint-placeholder-count="2">
+<button type="button" onClick="{{ ty.go }}" style="all:unset;cursor:pointer;flex:1;text-align:left;font-size:14px;font-weight:800;padding:12px;min-height:48px;border-right:1px solid rgba(32,30,29,.25);background:{{ ty.bg }};color:{{ ty.fg }}" style-hover="background:rgba(32,30,29,.08)">{{ ty.label }}</button>
+</sc-for>
+</div>
+</div>
+<div style="display:grid;gap:5px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Unit</span>
+<input value="{{ inspect.unit }}" onInput="{{ setInspectUnit }}" placeholder="Type or scan unit number" style="font-size:17px;padding:12px;border:1px solid rgba(32,30,29,.4);background:#f8f4f4;border-radius:0;font-variant-numeric:tabular-nums"/>
+<div style="font-size:12px;color:#605d5d">{{ inspect.tenantHint }}</div>
+</div>
+<div style="display:grid;gap:6px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Condition</span>
+<div style="display:flex;border:1px solid rgba(32,30,29,.4)">
+<sc-for list="{{ conditions }}" as="c" hint-placeholder-count="3">
+<button type="button" onClick="{{ c.go }}" style="all:unset;cursor:pointer;flex:1;text-align:left;font-size:13px;font-weight:800;padding:11px;min-height:44px;border-right:1px solid rgba(32,30,29,.25);background:{{ c.bg }};color:{{ c.fg }}" style-hover="background:rgba(32,30,29,.08)">{{ c.label }}</button>
+</sc-for>
+</div>
+</div>
+<div style="display:grid;gap:5px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Notes</span>
+<textarea value="{{ inspect.notes }}" onInput="{{ setInspectNotes }}" rows="3" placeholder="Walls, fittings, fixtures, meter reading" style="font-size:15px;padding:12px;border:1px solid rgba(32,30,29,.4);background:#f8f4f4;border-radius:0;resize:vertical"></textarea>
+</div>
+<div style="display:grid;gap:6px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Photos</span>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<sc-for list="{{ inspect.photos }}" as="p" hint-placeholder-count="4">
+<div style="width:88px;height:88px;background:repeating-linear-gradient(45deg,#d7d3d3 0 6px,#eae9e9 6px 12px);border:1px solid rgba(32,30,29,.3);display:flex;align-items:flex-end;padding:4px">
+<span style="font:9px/1.2 ui-monospace,Menlo,monospace;color:#605d5d">{{ p.label }}</span>
+</div>
+</sc-for>
+<button type="button" onClick="{{ addInspectPhoto }}" style="all:unset;cursor:pointer;width:88px;height:88px;border:2px solid #201e1d;display:flex;align-items:flex-end;padding:6px;font-size:12px;font-weight:800" style-hover="background:rgba(32,30,29,.08)">Camera +</button>
+</div>
+</div>
+<button type="button" onClick="{{ submitInspection }}" style="all:unset;cursor:pointer;display:block;width:100%;text-align:left;font-weight:800;font-size:17px;padding:16px;background:#ec3013;color:#f3f2f2;margin-top:4px" style-hover="background:#dd2b0f">{{ submitInspectLabel }}</button>
+<div style="font-size:12px;color:#605d5d">A move-out inspection with damage noted attaches to the tenant's offboarding checklist automatically.</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ ctDetail }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;background:#f3f2f2">
+<div style="padding:14px 16px;border-bottom:2px solid rgba(32,30,29,.4);display:flex;justify-content:space-between;align-items:center">
+<div>
+<div style="font-size:11px;font-family:ui-monospace,Menlo,monospace;color:#605d5d">{{ ticket.ref }}</div>
+<div style="font-size:20px;font-weight:800;letter-spacing:-.02em">{{ ticket.unit }}</div>
+</div>
+<button type="button" onClick="{{ ctBack }}" style="all:unset;cursor:pointer;font-size:13px;font-weight:800;color:#ae1800;padding:6px" style-hover="text-decoration:underline">Back</button>
+</div>
+<div style="padding:16px">
+<div style="font-size:18px;font-weight:800;letter-spacing:-.01em">{{ ticket.title }}</div>
+<div style="font-size:14px;color:#444141;margin-top:4px">{{ ticket.desc }}</div>
+<div style="font-size:12px;color:#605d5d;margin-top:6px">{{ ticket.meta }}</div>
+<div style="display:flex;gap:8px;margin-top:14px">
+<sc-for list="{{ ticket.photos }}" as="p" hint-placeholder-count="2">
+<div style="width:92px;height:70px;background:repeating-linear-gradient(45deg,#d7d3d3 0 6px,#eae9e9 6px 12px);border:1px solid rgba(32,30,29,.3);display:flex;align-items:flex-end;padding:4px">
+<span style="font:9px/1.2 ui-monospace,Menlo,monospace;color:#605d5d">{{ p.label }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="padding:0 16px 16px">
+<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Move status</div>
+<div style="display:grid;gap:6px">
+<sc-for list="{{ statusSteps }}" as="s" hint-placeholder-count="4">
+<button type="button" onClick="{{ s.go }}" style="all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:13px 12px;min-height:48px;background:{{ s.bg }};color:{{ s.fg }};border:1px solid rgba(32,30,29,.3)" style-hover="background:rgba(32,30,29,.1)">
+<span style="width:12px;height:12px;background:{{ s.dot }};display:block"></span>
+<span style="font-size:15px;font-weight:800">{{ s.label }}</span>
+<span style="margin-left:auto;font-size:12px;font-weight:600;color:{{ s.fg }}">{{ s.note }}</span>
+</button>
+</sc-for>
+</div>
+</div>
+<div style="padding:0 16px 24px">
+<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">History</div>
+<div style="border-left:2px solid rgba(32,30,29,.3);padding-left:12px;display:grid;gap:8px">
+<sc-for list="{{ ticket.timeline }}" as="t" hint-placeholder-count="3">
+<div style="font-size:13px">
+<div style="color:#605d5d;font-variant-numeric:tabular-nums">{{ t.when }}</div>
+<div>{{ t.what }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+
+<div style="padding:28px 30px;max-width:560px">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">Design notes — caretaker shell</div>
+<h2 style="font-size:22px;font-weight:800;letter-spacing:-.02em;margin:6px 0 14px">Built for one hand, one bar of signal</h2>
+<div style="display:grid;gap:0;border-top:2px solid rgba(32,30,29,.4)">
+<sc-for list="{{ ctNotes }}" as="n" hint-placeholder-count="6">
+<div style="padding:11px 0;border-bottom:1px solid rgba(32,30,29,.2)">
+<div style="font-size:14px;font-weight:800">{{ n.title }}</div>
+<div style="font-size:13px;color:#444141">{{ n.body }}</div>
+</div>
+</sc-for>
+</div>
+<button type="button" onClick="{{ toggleOffline }}" style="all:unset;cursor:pointer;font-weight:800;font-size:13px;padding:9px 14px;border:1px solid rgba(32,30,29,.4);margin-top:16px" style-hover="background:rgba(32,30,29,.08)">{{ offlineToggleLabel }}</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ offboardOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeOffboard }}" style="position:fixed;inset:0;background:rgba(32,30,29,.6);display:flex;align-items:center;justify-content:center;padding:24px;z-index:60">
+<div onClick="{{ stop }}" style="background:#f3f2f2;border:2px solid #201e1d;width:540px;max-width:100%;max-height:92vh;overflow:auto">
+<div style="padding:18px 22px 14px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#ae1800">Irreversible · landlord only</div>
+<div style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin-top:3px">Offboard {{ tenant.name }}</div>
+<div style="font-size:13px;color:#605d5d">Closes the lease, frees {{ tenant.unitLabel }}, and removes the tenant record.</div>
+</div>
+<div style="padding:16px 22px">
+<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Exit checklist</div>
+<sc-for list="{{ checklist }}" as="c" hint-placeholder-count="4">
+<div style="display:flex;gap:10px;align-items:baseline;padding:9px 0;border-top:1px solid rgba(32,30,29,.16)">
+<span style="width:10px;height:10px;background:{{ c.dot }};display:block;margin-top:6px;flex:none"></span>
+<div style="flex:1">
+<div style="font-size:14px;font-weight:600">{{ c.label }}</div>
+<div style="font-size:12px;color:#605d5d">{{ c.note }}</div>
+</div>
+<span style="font-size:12px;font-weight:800;color:{{ c.tone }};white-space:nowrap">{{ c.state }}</span>
+</div>
+</sc-for>
+</div>
+<div style="padding:4px 22px 16px">
+<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Deletion mode</div>
+<div style="display:grid;gap:8px">
+<sc-for list="{{ purgeModes }}" as="m" hint-placeholder-count="2">
+<button type="button" onClick="{{ m.go }}" style="all:unset;cursor:pointer;display:flex;gap:10px;padding:12px;background:{{ m.bg }};border:1px solid {{ m.border }}" style-hover="background:rgba(32,30,29,.06)">
+<span style="width:14px;height:14px;border:1px solid #201e1d;background:{{ m.dot }};display:block;margin-top:4px;flex:none"></span>
+<span>
+<span style="display:block;font-size:14px;font-weight:800">{{ m.label }}</span>
+<span style="display:block;font-size:12px;color:#444141">{{ m.body }}</span>
+</span>
+</button>
+</sc-for>
+</div>
+</div>
+<div style="padding:0 22px 16px">
+<label style="display:grid;gap:5px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">{{ confirmPrompt }}</span>
+<input value="{{ confirmText }}" onInput="{{ setConfirm }}" placeholder="{{ confirmPlaceholder }}" style="font-size:14px;padding:9px 12px;border:1px solid rgba(32,30,29,.4);background:#f8f4f4;border-radius:0"/>
+</label>
+</div>
+<div style="padding:14px 22px 20px;border-top:1px solid rgba(32,30,29,.25);display:flex;gap:8px;align-items:center">
+<button type="button" onClick="{{ confirmOffboard }}" disabled="{{ offboardDisabled }}" style="all:unset;cursor:pointer;font-weight:800;font-size:14px;padding:10px 16px;background:{{ offboardBtnBg }};color:#f3f2f2;opacity:{{ offboardOpacity }}">{{ offboardBtnLabel }}</button>
+<button type="button" onClick="{{ closeOffboard }}" style="all:unset;cursor:pointer;font-weight:800;font-size:14px;padding:10px 16px;border:1px solid rgba(32,30,29,.4)" style-hover="background:rgba(32,30,29,.08)">Cancel</button>
+<span style="font-size:12px;color:#605d5d;margin-left:auto">Archive PDF is generated first</span>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ payOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closePayment }}" style="position:fixed;inset:0;background:rgba(32,30,29,.6);display:flex;align-items:center;justify-content:center;padding:24px;z-index:60">
+<div onClick="{{ stop }}" style="background:#f3f2f2;border:2px solid #201e1d;width:420px;max-width:100%">
+<div style="padding:18px 22px 14px;border-bottom:2px solid rgba(32,30,29,.4)">
+<div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">Manual entry · bank reconciliation</div>
+<div style="font-size:22px;font-weight:800;letter-spacing:-.02em;margin-top:3px">Record a payment</div>
+</div>
+<div style="padding:16px 22px;display:grid;gap:12px">
+<label style="display:grid;gap:4px">
+<span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#444141;font-weight:600">Amount received (R)</span>
+<input value="{{ payAmount }}" onInput="{{ setPayAmount }}" style="font-size:14px;padding:9px 12px;border:1px solid rgba(32,30,29,.4);background:#f8f4f4;border-radius:0;font-variant-numeric:tabular-nums"/>
+</label>
+<div style="font-size:12px;color:#444141;border-left:2px solid #ec3013;padding-left:9px">Allocated oldest-invoice-first, posted as a credit to the ledger, receipt emailed.</div>
+</div>
+<div style="padding:12px 22px 18px;border-top:1px solid rgba(32,30,29,.25);display:flex;gap:8px">
+<button type="button" onClick="{{ savePayment }}" style="all:unset;cursor:pointer;font-weight:800;font-size:14px;padding:10px 16px;background:#ec3013;color:#f3f2f2" style-hover="background:#dd2b0f">Post to ledger</button>
+<button type="button" onClick="{{ closePayment }}" style="all:unset;cursor:pointer;font-weight:800;font-size:14px;padding:10px 16px;border:1px solid rgba(32,30,29,.4)" style-hover="background:rgba(32,30,29,.08)">Cancel</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;left:22px;bottom:22px;background:#201e1d;color:#f3f2f2;padding:12px 16px;font-size:14px;font-weight:600;z-index:70">{{ toast }}</div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;graceDays&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:0,&quot;max&quot;:21,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Rent policy&quot;},&quot;caretakerCanClose&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Permissions&quot;}}">
+const NAMES = ["A. Botha","S. Mokoena","T. Nkosi","M. Louw","P. Dlamini","J. Steenkamp","L. Mahlangu","R. van Wyk","C. Sithole","D. Coetzee","N. Maseko","F. Pillay","B. Mthembu","E. Titus","G. Khumalo","H. Swartbooi","I. Naidoo","K. du Plessis","O. Tshabalala","Q. Jacobs","S. Radebe","V. Ndlovu","W. Basson","Y. Zulu","Z. Mabaso","A. Hendricks","B. Nkomo","C. Erasmus","D. Kekana","E. Mbeki","F. Naicker","G. Sibiya","H. September","I. Molefe","J. Mokwena","K. Gumede","L. Schoeman","M. Adams","N. Baloyi","O. Simelane","P. Nkabinde","Q. Twala","R. Kruger","S. Kapa","T. Ndaba","U. Shange","V. Cele","W. Engelbrecht","X. Nomvete","Y. Kani","Z. Kativu","A. Ncube","B. Sithebe","C. Isaacs","D. Mashaba","E. Kandji","F. Hendriks","G. Amos","H. Angula","I. Tswane"];
+
+const PROPS = [
+  { id:"fh", name:"Fountainhof", prefix:"FH", count:40, baseRent:8400 },
+  { id:"rv", name:"Rainbow View", prefix:"RV", count:26, baseRent:6900 },
+  { id:"cc", name:"Concord", prefix:"CC", count:26, baseRent:6350 }
+];
+
+const VACANT = { "FH-107":"14 Jul 2026", "FH-306":"02 Aug 2026", "RV-204":"21 Aug 2026" };
+const NOTICE = { "CC-102":1, "FH-402":1 };
+
+const CATS = ["Plumbing","Electrical","Appliance","Doors & locks","Pest","Other"];
+
+const INSPECTIONS = [
+  { id:"IN-01", unit:"FH-107", property:"Fountainhof", type:"Move-out", date:"12 Jul 2026", tenant:"A. Botha", condition:"Damage noted", caretaker:"P. Nel", photos:6 },
+  { id:"IN-02", unit:"FH-107", property:"Fountainhof", type:"Move-in", date:"—", tenant:"Vacant", condition:"Pending", caretaker:"—", photos:0 },
+  { id:"IN-03", unit:"RV-204", property:"Rainbow View", type:"Move-out", date:"20 Aug 2026", tenant:"S. Mokoena", condition:"Good", caretaker:"J. Meyer", photos:4 },
+  { id:"IN-04", unit:"FH-306", property:"Fountainhof", type:"Move-out", date:"01 Aug 2026", tenant:"T. Nkosi", condition:"Fair", caretaker:"P. Nel", photos:5 },
+  { id:"IN-05", unit:"CC-102", property:"Concord", type:"Move-in", date:"03 Jun 2026", tenant:"M. Louw", condition:"Good", caretaker:"P. Nel", photos:3 }
+];
+
+const LEVIES_BASE = [
+  { month:"Sep 2026", property:"Fountainhof", amount:4200, note:"Body corporate — monthly" },
+  { month:"Sep 2026", property:"Rainbow View", amount:2600, note:"Body corporate — monthly" },
+  { month:"Sep 2026", property:"Concord", amount:1900, note:"Body corporate — monthly" },
+  { month:"Aug 2026", property:"Fountainhof", amount:4200, note:"Body corporate — monthly" },
+  { month:"Aug 2026", property:"Rainbow View", amount:2600, note:"Body corporate — monthly" },
+  { month:"Aug 2026", property:"Concord", amount:1900, note:"Body corporate — monthly" }
+];
+
+class Component extends DCLogic {
+  state = {
+    role:"landlord", screen:"dashboard", tenantId:null, query:"", filter:"All units",
+    payOpen:false, payAmount:"", offboardOpen:false, purge:"anonymise", confirm:"",
+    removed:{}, extraPayments:{}, elecExtra:[], demandSent:{},
+    elec:{ unit:"FH-204", amount:"400", kwh:"212", token:"", recharge:true },
+    inspectExtra:[], inspect:{ unit:"", type:"Move-in", condition:"Good", notes:"", photos:1 },
+    levyExtra:[], levy:{ property:"fh", amount:"", note:"" },
+    ct:"home", ticketId:"MR-2411", offline:false, photos:2, toast:"",
+    form:{ unit:"", cat:"Plumbing", desc:"", urgency:"Routine", via:"WhatsApp", photos:1 }
+  };
+
+  R(n){ const neg = n < 0; const s = "R " + Math.abs(Math.round(n)).toLocaleString("en-US"); return neg ? "(" + s + ")" : s; }
+
+  units(){
+    if (this._u) return this._u;
+    const out = []; let i = 0;
+    PROPS.forEach((p, pi) => {
+      for (let u = 1; u <= p.count; u++) {
+        const floor = Math.ceil(u / 10);
+        const label = p.prefix + "-" + (floor * 100 + ((u - 1) % 10) + 1);
+        const seed = (i * 37 + pi * 11) % 100;
+        const rent = p.baseRent + ((seed % 5) - 2) * 250;
+        const vacant = !!VACANT[label];
+        const notice = !!NOTICE[label];
+        out.push({
+          id:p.id + "-" + u, label, property:p.name, propertyId:p.id, rent,
+          vacant, notice, vacantSince: VACANT[label] || null,
+          tenant: vacant ? null : NAMES[i % NAMES.length],
+          balance: vacant ? 0 : (seed % 9 === 0 ? rent + (seed % 7) * 40 : 0),
+          leaseEnd: (((seed * 3) % 12) + 1 < 10 ? "0" : "") + ((((seed * 3) % 12)) + 1) + "/" + (((seed * 3) % 12) < 8 ? 2027 : 2026),
+          moveIn:"01/0" + ((seed % 9) + 1) + "/" + (2022 + (seed % 4)),
+          phone:"+27 82 " + (100 + (seed % 800)) + " " + (1000 + (seed * 7) % 9000),
+          meter:"04 " + (1200 + seed * 3) + " " + (4400 + seed * 7)
+        });
+        i++;
+      }
+    });
+    this._u = out; return out;
+  }
+
+  live(){ return this.units().filter(u => !this.state.removed[u.id]); }
+
+  vacantOf(u){ return u.vacant || !!this.state.removed[u.id]; }
+
+  balanceOf(u){
+    const paid = this.state.extraPayments[u.id] || 0;
+    return Math.max(0, u.balance - paid);
+  }
+
+  selected(){
+    const us = this.units().filter(u => !u.vacant && !this.state.removed[u.id]);
+    return us.find(u => u.id === this.state.tenantId) || us.filter(u => this.balanceOf(u) > 0)[0] || us[0];
+  }
+
+  flash = (m) => { this.setState({ toast:m }); clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast:"" }), 3000); };
+  go = (screen) => this.setState({ screen });
+
+  renderVals(){
+    const s = this.state;
+    const all = this.units();
+    const vacantList = all.filter(u => this.vacantOf(u));
+    const noticeList = all.filter(u => u.notice && !this.vacantOf(u));
+    const occupied = all.length - vacantList.length;
+    const t = this.selected();
+    const bal = this.balanceOf(t);
+    const grace = this.props.graceDays ?? 5;
+    const tag = (bg, fg) => ({ tagBg:bg, tagFg:fg });
+
+    const daysSince = (d) => {
+      if (!d) return 0;
+      const parts = String(d).split(" ");
+      const m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].indexOf(parts[1]);
+      const dt = new Date(2026, m, parseInt(parts[0], 10));
+      return Math.max(0, Math.round((new Date(2026, 8, 2) - dt) / 86400000));
+    };
+
+    const allInspections = INSPECTIONS.concat(s.inspectExtra);
+    const flaggedCount = allInspections.filter(i => i.condition === "Damage noted").length;
+    const allLevies = LEVIES_BASE.concat(s.levyExtra);
+
+    const navDefs = [
+      ["dashboard","Dashboard",""],
+      ["vacancy","Vacancy", String(vacantList.length)],
+      ["units","Properties & units", String(all.length)],
+      ["tickets","Maintenance","11"],
+      ["electricity","Electricity",""],
+      ["inspections","Inspections", String(flaggedCount)],
+      ["levies","Levies",""],
+      ["tenant","Tenants", String(occupied)],
+      ["staff","Staff & access","2"]
+    ];
+    const headings = {
+      dashboard:["September 2026 · 3 properties","Portfolio overview"],
+      vacancy:["Occupancy","Vacancy board"],
+      units:["Portfolio","Properties & units"],
+      tickets:["Operations","Maintenance board"],
+      electricity:["Utilities","Electricity purchases"],
+      inspections:["Move-in / move-out","Inspection records"],
+      levies:["Utilities & levies","Levies"],
+      tenant:["Tenant record · " + (t ? t.label : ""),"Lease & tenant"],
+      staff:["Administration","Staff & access"]
+    };
+    const head = headings[s.screen] || headings.dashboard;
+
+    const actionsFor = {
+      dashboard:[["Export month",false]],
+      vacancy:[["Mark unit ready",false],["Add listing",true]],
+      units:[["Import rent roll",false],["Add unit",true]],
+      tickets:[["Assign vendor",false]],
+      electricity:[["CSV import",false],["Batch capture",true]],
+      tenant:[["Email statement",false]],
+      staff:[["Invite staff",true]]
+    };
+    const acts = (actionsFor[s.screen] || []).map(([label, primary]) => ({
+      label, go: () => this.flash("Prototype — \u201c" + label + "\u201d is stubbed"),
+      bg: primary ? "#ec3013" : "transparent", fg: primary ? "#f3f2f2" : "#201e1d",
+      border: primary ? "#ec3013" : "rgba(32,30,29,.4)"
+    }));
+
+    let rows = this.units();
+    if (s.filter === "Vacant") rows = rows.filter(u => this.vacantOf(u));
+    if (s.filter === "In arrears") rows = rows.filter(u => !this.vacantOf(u) && this.balanceOf(u) > 0);
+    if (s.filter === "On notice") rows = rows.filter(u => u.notice);
+    const q = s.query.trim().toLowerCase();
+    if (q) rows = rows.filter(u => (u.label + " " + (u.tenant || "vacant") + " " + u.property).toLowerCase().includes(q));
+    const shown = rows.slice(0, 14);
+
+    const purchases = (() => {
+      const base = [
+        ["28 Aug","FH-204","4213 8890 1147 0032", 500, 264, false],
+        ["27 Aug","RV-108","4213 8890 2210 7741", 300, 158, true],
+        ["26 Aug","CC-205","4213 8891 0034 8812", 400, 211, false],
+        ["24 Aug","FH-311","4213 8891 4471 0093", 250, 132, true],
+        ["22 Aug","FH-102","4213 8892 1180 5540", 600, 214, false],
+        ["21 Aug","RV-203","4213 8892 7788 1120", 350, 184, true],
+        ["19 Aug","CC-101","4213 8893 0091 4471", 450, 237, false],
+        ["18 Aug","FH-401","4213 8893 5512 8890", 200, 105, true]
+      ];
+      const extra = s.elecExtra.map(e => [e.date, e.unit, e.token, e.amount, e.kwh, e.recharge]);
+      return extra.concat(base).map(([date, unit, token, amount, kwh, recharge]) => {
+        const rate = amount / kwh * 100;
+        const odd = rate > 210 || rate < 170;
+        return { date:date + " 2026", unit, token, amount:this.R(amount), kwh:String(kwh),
+          rate:rate.toFixed(0), rateTone: odd ? "#ae1800" : "#201e1d", rateWeight: odd ? "800" : "400",
+          recharge: recharge ? "On next invoice" : "Landlord cost",
+          rowBg: odd ? "rgba(255,196,184,.35)" : "transparent" };
+      });
+    })();
+
+    const elecRate = (() => {
+      const a = parseFloat(s.elec.amount), k = parseFloat(s.elec.kwh);
+      if (!a || !k) return { note:"Enter amount and kWh to see the effective rate.", tone:"#605d5d" };
+      const r = a / k * 100;
+      const odd = r > 210 || r < 170;
+      return { note: r.toFixed(0) + " c/kWh — " + (odd ? "outside this meter's usual 175–205 range. Check the kWh figure before saving." : "in line with this meter's history."), tone: odd ? "#ae1800" : "#444141" };
+    })();
+
+    const tickets = [
+      { id:"MR-2411", unit:"FH-204", title:"Geyser leaking into ceiling", status:"In progress", priority:"Urgent", via:"WhatsApp · P. Nel", meta:"Logged 31 Aug 07:12 · 3 photos",
+        desc:"Water coming through the ceiling in the passage. Tenant switched the geyser off at the DB board.",
+        photos:[{label:"tenant photo"},{label:"tenant photo"},{label:"caretaker photo"}],
+        timeline:[{when:"31 Aug 07:12",what:"Logged by P. Nel from a WhatsApp message"},{when:"31 Aug 07:40",what:"Landlord notified — marked urgent"},{when:"01 Sep 08:05",what:"Moved to In progress · plumber on site, 2 photos added"}] },
+      { id:"MR-2412", unit:"RV-108", title:"No power in bedroom sockets", status:"Logged", priority:"Emergency", via:"In person", meta:"Logged 02 Sep 06:48 · 1 photo",
+        desc:"Bedroom plug points dead, rest of the unit fine. Tripped breaker resets then trips again.",
+        photos:[{label:"DB board"}],
+        timeline:[{when:"02 Sep 06:48",what:"Logged in person at the gate by P. Nel"},{when:"02 Sep 06:49",what:"Emergency — landlord SMS sent"}] },
+      { id:"MR-2409", unit:"CC-205", title:"Blocked kitchen drain", status:"In progress", priority:"Routine", via:"WhatsApp", meta:"Logged 29 Aug · 2 photos", desc:"Sink draining very slowly, smell from the pipe.", photos:[{label:"under sink"},{label:"sink"}], timeline:[{when:"29 Aug 11:20",what:"Logged by P. Nel"},{when:"01 Sep 14:02",what:"Rodding attempted, needs a plumber"}] },
+      { id:"MR-2401", unit:"FH-311", title:"Front door lock sticking", status:"Resolved", priority:"Routine", via:"In person", meta:"Resolved 30 Aug · awaiting sign-off", desc:"Key turns but the latch catches.", photos:[{label:"lock"},{label:"after"}], timeline:[{when:"27 Aug",what:"Logged by P. Nel"},{when:"30 Aug",what:"Lock lubricated and strike plate adjusted — marked Resolved"}] },
+      { id:"MR-2388", unit:"FH-402", title:"Gate motor jamming", status:"Awaiting parts", priority:"Urgent", via:"Phone", meta:"Logged 21 Aug · part ordered", desc:"Sliding gate stops halfway, motor runs.", photos:[{label:"motor"}], timeline:[{when:"21 Aug",what:"Logged by P. Nel"},{when:"23 Aug",what:"Technician: gearbox worn, part ordered"}] }
+    ];
+    const ticket = tickets.find(x => x.id === s.ticketId) || tickets[0];
+    const statusTag = { "Logged":["#ffc4b8","#7c1405"], "In progress":["#201e1d","#f3f2f2"], "Awaiting parts":["#d7d3d3","#444141"], "Resolved":["#eae9e9","#444141"] };
+
+    const board = ["Logged","In progress","Awaiting parts","Resolved"].map(st => {
+      const items = tickets.filter(x => x.status === st);
+      return { label:st, count:String(items.length), items: items.map(x => ({
+        ref:x.id, title:x.title, meta:x.unit + " · " + x.meta, via:"via " + x.via,
+        priority:x.priority,
+        tagBg: x.priority === "Emergency" ? "#ec3013" : (x.priority === "Urgent" ? "#ffc4b8" : "#d7d3d3"),
+        tagFg: x.priority === "Emergency" ? "#f3f2f2" : (x.priority === "Urgent" ? "#7c1405" : "#444141")
+      })) };
+    });
+
+    const moveOutRecord = t ? allInspections.find(i => i.unit === t.label && i.type === "Move-out") : null;
+    const blockers = [
+      { label:"Outstanding balance", note: bal > 0 ? "Rent and late fees still owing" : "Ledger settled", state: bal > 0 ? this.R(bal) : "Clear", ok: bal === 0 },
+      { label:"Deposit", note:"Held " + this.R(t ? t.rent : 0) + " — refund or offset before offboarding", state:"Not returned", ok:false },
+      { label:"Open repairs", note:"Tickets attached to this unit", state:"None open", ok:true },
+      { label:"Move-out inspection", note:"Photos and condition notes", state: moveOutRecord ? "Captured — " + moveOutRecord.condition : "Not captured", ok: !!moveOutRecord }
+    ];
+    const hard = s.purge === "hard";
+    const confirmWord = hard ? "ERASE" : "OFFBOARD";
+    const canOffboard = s.confirm.trim().toUpperCase() === confirmWord;
+
+    return {
+      roles:[["landlord","Landlord"],["caretaker","Caretaker"]].map(([id,label]) => ({
+        label, go: () => this.setState({ role:id }),
+        bg: s.role === id ? "#201e1d" : "transparent", fg: s.role === id ? "#f3f2f2" : "#201e1d"
+      })),
+      roleNote: s.role === "landlord" ? "Full access — money, portfolio, deletion" : "Restricted — repairs and unit lists only",
+      isLandlord: s.role === "landlord",
+      isCaretaker: s.role === "caretaker",
+
+      nav: navDefs.map(([id,label,badge]) => ({
+        label, badge, go: () => this.go(id),
+        weight: s.screen === id ? "800" : "600",
+        color: s.screen === id ? "#ec3013" : "#605d5d",
+        badgeColor: s.screen === id ? "#ec3013" : "#9b9797"
+      })),
+      crumb: head[0], heading: head[1], actions: acts,
+      atDashboard: s.screen === "dashboard", atVacancy: s.screen === "vacancy", atUnits: s.screen === "units",
+      atElectricity: s.screen === "electricity", atTickets: s.screen === "tickets",
+      atInspections: s.screen === "inspections", atLevies: s.screen === "levies",
+      atTenant: s.screen === "tenant", atStaff: s.screen === "staff",
+      goVacancy: () => this.go("vacancy"), goElectricity: () => this.go("electricity"), goUnits: () => this.go("units"),
+      noop: () => this.flash("Prototype — this action is stubbed"),
+
+      metrics: [
+        { label:"Occupied", value: occupied + " / " + all.length, note: Math.round(occupied / all.length * 100) + "% occupancy", tone:"#201e1d" },
+        { label:"Vacant", value: String(vacantList.length), note: noticeList.length + " more on notice", tone: vacantList.length ? "#ae1800" : "#201e1d" },
+        { label:"Rent billed — Sep", value: this.R(all.filter(u => !this.vacantOf(u)).reduce((a,u) => a + u.rent, 0)), note: occupied + " invoices", tone:"#201e1d" },
+        { label:"Open repairs", value:"11", note:"2 urgent · 1 emergency", tone:"#201e1d" }
+      ],
+
+      occupancy: PROPS.map(p => {
+        const pu = all.filter(u => u.propertyId === p.id);
+        const vac = pu.filter(u => this.vacantOf(u)).length;
+        return { name:p.name, detail:(pu.length - vac) + " of " + pu.length + " occupied",
+          cells: pu.map(u => ({ bg: this.vacantOf(u) ? "#ec3013" : (u.notice ? "#bab6b6" : "#201e1d") })) };
+      }),
+
+      activity: [
+        { time:"06:48", what:"Logged RV-108 — no power in bedroom sockets", who:"P. Nel · in person", tag:"Emergency", tagBg:"#ec3013", tagFg:"#f3f2f2" },
+        { time:"08:05", what:"FH-204 moved to In progress, 2 photos added", who:"P. Nel", tag:"Photo", tagBg:"#eae9e9", tagFg:"#444141" },
+        { time:"09:12", what:"CC-205 note: rodding failed, plumber needed", who:"P. Nel", tag:"Note", tagBg:"#eae9e9", tagFg:"#444141" },
+        { time:"Yesterday", what:"FH-311 marked Resolved — awaiting your sign-off", who:"P. Nel", tag:"Sign-off", tagBg:"#ffc4b8", tagFg:"#7c1405" },
+        { time:"Yesterday", what:"3 photos synced from offline outbox", who:"P. Nel · device", tag:"Sync", tagBg:"#eae9e9", tagFg:"#444141" }
+      ],
+
+      elecSummary: PROPS.map((p, i) => ({ name:p.name, detail:this.R([4820, 2140, 1980][i]) + " · " + [2510, 1120, 1035][i] + " kWh" })),
+
+      vacancyStats: [
+        { label:"Vacant now", value:String(vacantList.length), note:"of " + all.length + " units", tone:"#ae1800" },
+        { label:"Average days vacant", value: vacantList.length ? String(Math.round(vacantList.reduce((a,u) => a + daysSince(u.vacantSince || "02 Sep 2026"), 0) / vacantList.length)) : "0", note:"from unit_status_history", tone:"#201e1d" },
+        { label:"Rent lost — month to date", value:this.R(vacantList.reduce((a,u) => a + u.rent, 0)), note:"at listed rent", tone:"#ae1800" },
+        { label:"On notice", value:String(noticeList.length), note:"leases ending inside 60 days", tone:"#201e1d" }
+      ],
+      vacantRows: vacantList.concat(noticeList).map(u => {
+        const vac = this.vacantOf(u);
+        const d = vac ? daysSince(u.vacantSince || "02 Sep 2026") : 0;
+        return { label:u.label, property:u.property,
+          status: vac ? "Vacant" : "On notice",
+          tagBg: vac ? "#ec3013" : "#d7d3d3", tagFg: vac ? "#f3f2f2" : "#444141",
+          since: vac ? (u.vacantSince || "02 Sep 2026") : "—",
+          days: vac ? String(d) : "—",
+          lost: vac ? this.R(u.rent / 30 * d) : "—",
+          ready: vac ? (d > 20 ? "Yes — listed" : "Repaint outstanding") : "Lease runs to " + u.leaseEnd };
+      }),
+
+      query: s.query, setQuery: (e) => this.setState({ query:e.target.value }),
+      filters: ["All units","Vacant","In arrears","On notice"].map(f => ({
+        label:f, go: () => this.setState({ filter:f }),
+        bg: s.filter === f ? "#201e1d" : "transparent", fg: s.filter === f ? "#f3f2f2" : "#201e1d"
+      })),
+      resultCount: rows.length + " of " + all.length + " units",
+      pageNote: shown.length < rows.length ? "Showing " + shown.length + " of " + rows.length + " — the real table pages server-side." : "End of results.",
+      rows: shown.map(u => {
+        const vac = this.vacantOf(u);
+        const b = vac ? 0 : this.balanceOf(u);
+        return { label:u.label, property:u.property,
+          tenant: vac ? "— vacant —" : u.tenant,
+          tenantTone: vac ? "#9b9797" : "#201e1d",
+          rent:this.R(u.rent), balance: vac ? "—" : (b > 0 ? this.R(b) : "—"),
+          balanceTone: b > 0 ? "#ae1800" : "#9b9797",
+          status: vac ? "Vacant" : (u.notice ? "On notice" : (b > 0 ? "In arrears" : "Occupied")),
+          tagBg: vac ? "#ec3013" : (b > 0 ? "#ffc4b8" : "#eae9e9"),
+          tagFg: vac ? "#f3f2f2" : (b > 0 ? "#7c1405" : "#444141"),
+          go: () => vac ? this.go("vacancy") : this.setState({ screen:"tenant", tenantId:u.id }) };
+      }),
+
+      elecStats: [
+        { label:"Spend — Sep to date", value:this.R(8940), note:"41 purchases across 3 properties", tone:"#201e1d" },
+        { label:"Units bought", value:"4,665 kWh", note:"average 192 c/kWh", tone:"#201e1d" },
+        { label:"Recharged to tenants", value:this.R(3120), note:"on next invoice run", tone:"#201e1d" },
+        { label:"Rate anomalies", value:"2", note:"flagged for review", tone:"#ae1800" }
+      ],
+      purchases,
+      anomalyNote: "Rows tinted red sit outside their meter's usual rate band — usually a mistyped kWh figure, occasionally a failing meter. Duplicate token numbers are rejected on entry.",
+      elecForm: { unit:s.elec.unit, amount:s.elec.amount, kwh:s.elec.kwh, token:s.elec.token,
+        rechargeBg: s.elec.recharge ? "#ec3013" : "transparent",
+        rateNote: elecRate.note, rateTone: elecRate.tone },
+      setElecUnit: (e) => this.setState({ elec: Object.assign({}, s.elec, { unit:e.target.value }) }),
+      setElecAmount: (e) => this.setState({ elec: Object.assign({}, s.elec, { amount:e.target.value }) }),
+      setElecKwh: (e) => this.setState({ elec: Object.assign({}, s.elec, { kwh:e.target.value }) }),
+      setElecToken: (e) => this.setState({ elec: Object.assign({}, s.elec, { token:e.target.value }) }),
+      toggleRecharge: () => this.setState({ elec: Object.assign({}, s.elec, { recharge: !s.elec.recharge }) }),
+      saveElec: () => {
+        const a = parseFloat(s.elec.amount) || 0, k = parseFloat(s.elec.kwh) || 0;
+        if (!a || !k) { this.flash("Amount and kWh are required"); return; }
+        this.setState(st => ({
+          elecExtra: [{ date:"02 Sep", unit:st.elec.unit, token: st.elec.token || "4213 8894 " + Math.floor(1000 + Math.random() * 8999) + " " + Math.floor(1000 + Math.random() * 8999), amount:a, kwh:k, recharge:st.elec.recharge }].concat(st.elecExtra),
+          elec: Object.assign({}, st.elec, { token:"" })
+        }));
+        this.flash(this.R(a) + " · " + k + " kWh captured for " + s.elec.unit);
+      },
+
+      board,
+
+      inspectionStats: [
+        { label:"Logged this year", value:String(allInspections.filter(i => i.date !== "—").length), note:"move-ins & move-outs", tone:"#201e1d" },
+        { label:"Move-outs", value:String(allInspections.filter(i => i.type === "Move-out").length), note:"on record", tone:"#201e1d" },
+        { label:"Damage noted", value:String(flaggedCount), note:"flagged for deposit review", tone: flaggedCount ? "#ae1800" : "#201e1d" },
+        { label:"Pending", value:String(allInspections.filter(i => i.condition === "Pending").length), note:"move-in not yet captured", tone:"#201e1d" }
+      ],
+      inspectionRows: allInspections.map(i => ({
+        unit:i.unit, property:i.property, type:i.type,
+        typeBg: i.type === "Move-out" ? "#201e1d" : "#eae9e9", typeFg: i.type === "Move-out" ? "#f3f2f2" : "#444141",
+        date:i.date, tenant:i.tenant, condition:i.condition,
+        condTone: i.condition === "Damage noted" ? "#ae1800" : (i.condition === "Pending" ? "#605d5d" : "#201e1d"),
+        caretaker:i.caretaker, photos:String(i.photos)
+      })),
+
+      levyStats: [
+        { label:"Levies — Sep 2026", value:this.R(4200 + 2600 + 1900), note:"3 properties", tone:"#201e1d" },
+        { label:"Levies — Aug 2026", value:this.R(4200 + 2600 + 1900), note:"3 properties", tone:"#201e1d" },
+        { label:"Outstanding", value:this.R(0), note:"paid on receipt", tone:"#201e1d" },
+        { label:"YTD total", value:this.R((4200 + 2600 + 1900) * 9), note:"Jan – Sep 2026", tone:"#201e1d" }
+      ],
+      levyRows: allLevies.map(l => ({ month:l.month, property:l.property, amount:this.R(l.amount), note:l.note })),
+      levyForm: {
+        amount:s.levy.amount, note:s.levy.note,
+        properties: PROPS.map(p => ({ label:p.name, go: () => this.setState({ levy: Object.assign({}, s.levy, { property:p.id }) }),
+          bg: s.levy.property === p.id ? "#201e1d" : "transparent", fg: s.levy.property === p.id ? "#f3f2f2" : "#201e1d" }))
+      },
+      setLevyAmount: (e) => this.setState({ levy: Object.assign({}, s.levy, { amount:e.target.value }) }),
+      setLevyNote: (e) => this.setState({ levy: Object.assign({}, s.levy, { note:e.target.value }) }),
+      saveLevy: () => {
+        const amt = parseFloat(s.levy.amount) || 0;
+        if (!amt) { this.flash("Enter an amount"); return; }
+        const propName = (PROPS.find(p => p.id === s.levy.property) || PROPS[0]).name;
+        this.setState(st => ({
+          levyExtra: [{ month:"Sep 2026", property:propName, amount:amt, note: st.levy.note || "Manual capture" }].concat(st.levyExtra),
+          levy: Object.assign({}, st.levy, { amount:"", note:"" })
+        }));
+        this.flash(this.R(amt) + " levy captured for " + propName);
+      },
+
+      tenant: t ? {
+        name:t.tenant, unitLabel:t.label,
+        contact:t.phone + " · " + t.label + ", " + t.property + " · meter " + t.meter,
+        balance: bal > 0 ? this.R(bal) : this.R(0),
+        balanceTone: bal > 0 ? "#ae1800" : "#201e1d",
+        balanceNote: bal > 0 ? "Overdue — past the " + grace + "-day grace period" : "Settled · next invoice 26 Sep"
+      } : { name:"—", unitLabel:"—", contact:"", balance:this.R(0), balanceTone:"#201e1d", balanceNote:"" },
+      tenantTags: t ? [
+        { label: bal > 0 ? "In arrears" : "Current", bg: bal > 0 ? "#ec3013" : "#d7d3d3", fg: bal > 0 ? "#f3f2f2" : "#444141" },
+        { label:"Lease to " + t.leaseEnd, bg:"#eae9e9", fg:"#444141" },
+        { label:"Prepaid meter", bg:"#eae9e9", fg:"#444141" }
+      ].concat(s.demandSent[t.id] ? [{ label:"Demand sent", bg:"#201e1d", fg:"#f3f2f2" }] : []) : [],
+      leaseTerms: t ? [
+        { k:"Unit", v:t.label + " · " + t.property },
+        { k:"Move-in", v:t.moveIn },
+        { k:"Lease ends", v:t.leaseEnd },
+        { k:"Monthly rent", v:this.R(t.rent) },
+        { k:"Deposit held", v:this.R(t.rent) },
+        { k:"Grace period", v:grace + " days" },
+        { k:"Late fee", v:this.R(250) + " flat, after grace" },
+        { k:"Phone / WhatsApp", v:t.phone },
+        { k:"Emergency contact", v:"N. Botha · +27 82 447 2210" },
+        { k:"Electricity meter", v:t.meter }
+      ] : [],
+      tenantElec: [["28 Aug","264 kWh",500],["14 Aug","158 kWh",300],["02 Aug","211 kWh",400],["19 Jul","132 kWh",250],["06 Jul","214 kWh",400],["21 Jun","184 kWh",350]].map(([date,kwh,amt]) => ({ date:date + " 2026", kwh, amount:this.R(amt) })),
+      tenantElecNote:"Six months at an average of R 366 a month. A jump of more than 40% raises a flag on the electricity board.",
+
+      staff: [
+        { name:"M. Brandt", role:"Landlord", tagBg:"#ec3013", tagFg:"#f3f2f2", props:"All — Fountainhof, Rainbow View, Concord", canClose:"Yes · sole holder of deletion", active:"Now" },
+        { name:"P. Nel", role:"Caretaker", tagBg:"#d7d3d3", tagFg:"#444141", props:"Fountainhof, Rainbow View, Concord", canClose:"No — marks Resolved for sign-off", active:"12 min ago" },
+        { name:"J. Meyer", role:"Caretaker", tagBg:"#d7d3d3", tagFg:"#444141", props:"Concord only", canClose:"No", active:"Yesterday" }
+      ],
+
+      payOpen: s.payOpen, payAmount: s.payAmount,
+      openPayment: () => this.setState({ payOpen:true, payAmount:String(bal > 0 ? Math.round(bal) : Math.round(t ? t.rent : 0)) }),
+      closePayment: () => this.setState({ payOpen:false }),
+      setPayAmount: (e) => this.setState({ payAmount:e.target.value }),
+      savePayment: () => {
+        const amt = parseFloat(String(s.payAmount).replace(/[^0-9.]/g,"")) || 0;
+        this.setState(st => ({ payOpen:false, extraPayments: Object.assign({}, st.extraPayments, { [t.id]: (st.extraPayments[t.id] || 0) + amt }) }));
+        this.flash(this.R(amt) + " posted to " + t.tenant + "'s ledger");
+      },
+      stop: (e) => e.stopPropagation(),
+
+      demandLabel: t && s.demandSent[t.id] ? "Letter of demand sent" : "Send letter of demand",
+      demandBorder: bal > 0 ? "#ae1800" : "rgba(32,30,29,.3)",
+      demandColor: bal > 0 ? "#ae1800" : "#9b9797",
+      demandOpacity: bal > 0 ? "1" : "0.5",
+      sendDemand: () => {
+        if (!t || bal <= 0) { this.flash("No overdue balance — nothing to send"); return; }
+        this.setState(st => ({ demandSent: Object.assign({}, st.demandSent, { [t.id]: true }) }));
+        this.flash("Letter of demand generated for " + t.tenant + " · emailed & queued for post");
+      },
+
+      offboardOpen: s.offboardOpen,
+      openOffboard: () => this.setState({ offboardOpen:true, confirm:"", purge:"anonymise" }),
+      closeOffboard: () => this.setState({ offboardOpen:false }),
+      checklist: blockers.map(b => ({
+        label:b.label, note:b.note, state:b.state,
+        dot: b.ok ? "#201e1d" : "#ec3013", tone: b.ok ? "#605d5d" : "#ae1800"
+      })),
+      purgeModes: [
+        { key:"anonymise", label:"Offboard & anonymise — recommended", body:"Tenant record deleted, unit freed. Lease, invoices and ledger stay, carrying only \u201c" + (t ? t.tenant + " · " + t.label : "") + "\u201d as a reference. Your books survive." },
+        { key:"hard", label:"Erase completely", body:"Also deletes invoices, payments and ledger rows. Irreversible, removes this tenant from past financial reports, and may conflict with record-retention rules." }
+      ].map(m => ({ label:m.label, body:m.body, go: () => this.setState({ purge:m.key, confirm:"" }),
+        bg: s.purge === m.key ? "#eae9e9" : "transparent",
+        border: s.purge === m.key ? "#201e1d" : "rgba(32,30,29,.3)",
+        dot: s.purge === m.key ? "#ec3013" : "transparent" })),
+      confirmPrompt: "Type " + confirmWord + " to confirm",
+      confirmPlaceholder: confirmWord,
+      confirmText: s.confirm,
+      setConfirm: (e) => this.setState({ confirm:e.target.value }),
+      offboardDisabled: !canOffboard,
+      offboardOpacity: canOffboard ? "1" : "0.45",
+      offboardBtnBg: hard ? "#7c1405" : "#ec3013",
+      offboardBtnLabel: hard ? "Erase tenant & records" : "Offboard & free unit",
+      confirmOffboard: () => {
+        if (!canOffboard) { this.flash("Type " + confirmWord + " to confirm"); return; }
+        const name = t.tenant, label = t.label;
+        this.setState(st => ({ offboardOpen:false, screen:"vacancy", tenantId:null, confirm:"",
+          removed: Object.assign({}, st.removed, { [t.id]: true }) }));
+        this.flash(name + " offboarded · " + label + " is now vacant · archive PDF emailed");
+      },
+
+      ctHome: s.ct === "home", ctForm: s.ct === "form", ctDetail: s.ct === "detail", ctInspectForm: s.ct === "inspect",
+      ctNew: () => this.setState({ ct:"form", form:{ unit:"", cat:"Plumbing", desc:"", urgency:"Routine", via:"WhatsApp", photos:1 } }),
+      ctNewInspect: () => this.setState({ ct:"inspect", inspect:{ unit:"", type:"Move-in", condition:"Good", notes:"", photos:1 } }),
+      ctBack: () => this.setState({ ct:"home" }),
+      ctSummary: "3 open · 1 needs a photo · 1 waiting for sign-off",
+      ctTickets: tickets.map(x => ({
+        unit:x.unit, title:x.title, status:x.status, meta:x.meta + " · via " + x.via,
+        tagBg: statusTag[x.status][0], tagFg: statusTag[x.status][1],
+        go: () => this.setState({ ct:"detail", ticketId:x.id })
+      })),
+      syncLabel: s.offline ? "Offline · 2 waiting to upload" : "Synced",
+      syncTone: s.offline ? "#ae1800" : "#605d5d",
+      toggleOffline: () => this.setState({ offline: !s.offline }),
+      offlineToggleLabel: s.offline ? "Simulate reconnect" : "Simulate no signal",
+
+      form: { unit:s.form.unit, desc:s.form.desc,
+        tenantHint: (() => {
+          const m = all.find(u => u.label.toLowerCase() === s.form.unit.trim().toLowerCase());
+          if (!m) return "Recent: FH-204 · RV-108 · CC-205";
+          return m.tenant ? "Tenant on lease: " + m.tenant + " · " + m.phone : m.label + " is vacant — logging as a void repair";
+        })(),
+        photos: Array.from({ length: s.form.photos }, (_, i) => ({ label: i === 0 ? "tenant photo" : "photo " + (i + 1) })) },
+      setFormUnit: (e) => this.setState({ form: Object.assign({}, s.form, { unit:e.target.value }) }),
+      setFormDesc: (e) => this.setState({ form: Object.assign({}, s.form, { desc:e.target.value }) }),
+      addPhoto: () => this.setState({ form: Object.assign({}, s.form, { photos: Math.min(6, s.form.photos + 1) }) }),
+      categories: CATS.map(c => ({ label:c, go: () => this.setState({ form: Object.assign({}, s.form, { cat:c }) }),
+        bg: s.form.cat === c ? "#201e1d" : "#f8f4f4", fg: s.form.cat === c ? "#f3f2f2" : "#201e1d" })),
+      urgencies: ["Routine","Urgent","Emergency"].map(u => ({ label:u, go: () => this.setState({ form: Object.assign({}, s.form, { urgency:u }) }),
+        bg: s.form.urgency === u ? (u === "Emergency" ? "#ec3013" : "#201e1d") : "transparent",
+        fg: s.form.urgency === u ? "#f3f2f2" : "#201e1d" })),
+      vias: ["WhatsApp","In person","Phone"].map(v => ({ label:v, go: () => this.setState({ form: Object.assign({}, s.form, { via:v }) }),
+        bg: s.form.via === v ? "#201e1d" : "transparent", fg: s.form.via === v ? "#f3f2f2" : "#201e1d" })),
+      submitLabel: s.offline ? "Save to outbox — will sync" : "Submit repair",
+      submitTicket: () => {
+        if (!s.form.unit.trim()) { this.flash("Pick a unit first"); return; }
+        this.setState({ ct:"home" });
+        this.flash(s.offline
+          ? "Saved offline · syncs when signal returns"
+          : "MR-2413 logged for " + s.form.unit.trim().toUpperCase() + " · landlord notified");
+      },
+
+      inspectTypes: ["Move-in","Move-out"].map(ty => ({ label:ty, go: () => this.setState({ inspect: Object.assign({}, s.inspect, { type:ty }) }),
+        bg: s.inspect.type === ty ? "#201e1d" : "transparent", fg: s.inspect.type === ty ? "#f3f2f2" : "#201e1d" })),
+      conditions: ["Good","Fair","Damage noted"].map(c => ({ label:c, go: () => this.setState({ inspect: Object.assign({}, s.inspect, { condition:c }) }),
+        bg: s.inspect.condition === c ? (c === "Damage noted" ? "#ec3013" : "#201e1d") : "transparent",
+        fg: s.inspect.condition === c ? "#f3f2f2" : "#201e1d" })),
+      inspect: { unit:s.inspect.unit, notes:s.inspect.notes,
+        tenantHint: (() => {
+          const m = all.find(u => u.label.toLowerCase() === s.inspect.unit.trim().toLowerCase());
+          if (!m) return "Recent: FH-107 · RV-204 · CC-102";
+          return m.tenant ? "Tenant on lease: " + m.tenant : m.label + " is vacant";
+        })(),
+        photos: Array.from({ length: s.inspect.photos }, (_, i) => ({ label: i === 0 ? "unit photo" : "photo " + (i + 1) })) },
+      setInspectUnit: (e) => this.setState({ inspect: Object.assign({}, s.inspect, { unit:e.target.value }) }),
+      setInspectNotes: (e) => this.setState({ inspect: Object.assign({}, s.inspect, { notes:e.target.value }) }),
+      addInspectPhoto: () => this.setState({ inspect: Object.assign({}, s.inspect, { photos: Math.min(8, s.inspect.photos + 1) }) }),
+      submitInspectLabel: s.offline ? "Save to outbox — will sync" : "Submit inspection",
+      submitInspection: () => {
+        if (!s.inspect.unit.trim()) { this.flash("Pick a unit first"); return; }
+        const u = s.inspect.unit.trim().toUpperCase();
+        const match = all.find(x => x.label === u);
+        this.setState(st => ({ ct:"home", inspectExtra: [{
+          id:"IN-" + (90 + st.inspectExtra.length), unit:u, property: match ? match.property : "—",
+          type:st.inspect.type, date:"02 Sep 2026", tenant: match && match.tenant ? match.tenant : "Vacant",
+          condition:st.inspect.condition, caretaker:"P. Nel", photos:st.inspect.photos
+        }].concat(st.inspectExtra) }));
+        this.flash(s.offline ? "Saved offline · syncs when signal returns" : (s.inspect.type + " inspection logged for " + u));
+      },
+
+      ticket: { ref:ticket.id, unit:ticket.unit + " · " + (all.find(u => u.label === ticket.unit) || {}).property,
+        title:ticket.title, desc:ticket.desc, meta:ticket.meta + " · via " + ticket.via,
+        photos:ticket.photos, timeline:ticket.timeline },
+      statusSteps: ["Logged","In progress","Awaiting parts","Resolved"].map(st => {
+        const isNow = ticket.status === st;
+        return { label:st, note: isNow ? "current" : "", dot: isNow ? "#ec3013" : "#bab6b6",
+          bg: isNow ? "#201e1d" : "#f8f4f4", fg: isNow ? "#f3f2f2" : "#201e1d",
+          go: () => this.flash(ticket.id + " → " + st + " · photo prompt shown, landlord notified") };
+      }),
+      ctNotes: [
+        { title:"One button, not a menu", body:"Logging a repair is the only thing on the home screen. Everything else is a list of the caretaker's own tickets." },
+        { title:"Camera first", body:"Photos come from the native camera at capture time and compress on the device before upload." },
+        { title:"Offline outbox", body:"Tickets and photos queue locally when there is no signal. Use the button below to see the offline state." },
+        { title:"Four states only", body:"Logged, In progress, Awaiting parts, Resolved. Closing a ticket stays with the landlord." },
+        { title:"No money, ever", body:"Costs, rent, balances and invoices are not returned to a caretaker session — enforced by row-level security, not by hidden menus." },
+        { title:"48px minimum targets", body:"Every control is thumb-sized, flush-left, and readable in daylight." }
+      ],
+      toast: s.toast
+    };
+  }
+}
+
+</script>
+</body>
+</html>
