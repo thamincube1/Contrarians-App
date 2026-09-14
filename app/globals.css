@@ -1,0 +1,202 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-text: #201e1d;
+  --color-accent: #ec3013;
+  --color-accent-2: #e15b47;
+  --color-divider: rgba(32, 30, 29, 0.4);
+  --color-divider-minor: rgba(32, 30, 29, 0.18);
+
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+
+  --color-accent-100: #fff2ef;
+  --color-accent-200: #ffe0d9;
+  --color-accent-300: #ffc4b8;
+  --color-accent-400: #ff9783;
+  --color-accent-500: #ff563c;
+  --color-accent-600: #dd2b0f;
+  --color-accent-700: #ae1800;
+  --color-accent-800: #7c1405;
+  --color-accent-900: #4d170e;
+
+  --font-heading: var(--font-archivo), system-ui, sans-serif;
+  --font-body: var(--font-archivo), system-ui, sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--color-accent-700);
+}
+a:hover {
+  color: var(--color-accent-800);
+}
+
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+::selection {
+  background: rgba(236, 48, 19, 0.3);
+}
+
+input,
+button,
+textarea,
+select {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  margin: 0;
+}
+
+.tabnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* — tags — */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+/* — buttons — */
+/* Deliberately not `all: unset` — that resets `display` too and fights
+   the Tailwind layout utilities (flex/grid/block) callers put on the
+   same element, since both are single-class selectors of equal
+   specificity and this rule loads after Tailwind's. */
+.btn {
+  appearance: none;
+  background: none;
+  border: none;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 800;
+  text-align: inherit;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+.btn:hover {
+  background: rgba(32, 30, 29, 0.08);
+}
+.btn-primary {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+.btn-primary:hover {
+  background: var(--color-accent-600);
+}
+.btn-secondary {
+  border: 1px solid var(--color-divider);
+}
+
+/* — inputs — */
+.field-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral-800);
+  font-weight: 600;
+}
+.input {
+  font-size: 14px;
+  padding: 8px 11px;
+  border: 1px solid var(--color-divider);
+  background: var(--color-bg);
+  border-radius: 0;
+  color: var(--color-text);
+  width: 100%;
+}
+.input:hover {
+  border-color: rgba(32, 30, 29, 0.55);
+}
+.input::placeholder {
+  color: var(--color-neutral-500);
+}
+
+/* — table — */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-neutral-800);
+  border-bottom: 2px solid var(--color-divider);
+  padding: 9px 12px;
+}
+.table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(32, 30, 29, 0.14);
+}
+.table tbody tr:hover {
+  background: rgba(32, 30, 29, 0.05);
+}
+
+.photo-slot {
+  background: repeating-linear-gradient(45deg, #d7d3d3 0 6px, #eae9e9 6px 12px);
+  border: 1px solid rgba(32, 30, 29, 0.3);
+  display: flex;
+  align-items: flex-end;
+  padding: 4px;
+}
