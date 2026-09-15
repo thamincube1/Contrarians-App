@@ -1,30 +1,12 @@
-"use client";
+import App from "@/components/App";
+import { getInitialData } from "@/lib/data";
 
-import { AppProvider, useApp } from "@/lib/store";
-import Header from "@/components/Header";
-import Toast from "@/components/Toast";
-import LandlordShell from "@/components/landlord/LandlordShell";
-import CaretakerShell from "@/components/caretaker/CaretakerShell";
-import OffboardModal from "@/components/modals/OffboardModal";
-import PaymentModal from "@/components/modals/PaymentModal";
+// This page reads live data from Postgres on every request — writes made
+// through the app (payments, offboarding, new captures) must show up on
+// the next load, so it must never be statically prerendered at build time.
+export const dynamic = "force-dynamic";
 
-function AppBody() {
-  const { state } = useApp();
-  return (
-    <>
-      <Header />
-      {state.role === "landlord" ? <LandlordShell /> : <CaretakerShell />}
-      <OffboardModal />
-      <PaymentModal />
-      <Toast />
-    </>
-  );
-}
-
-export default function Home() {
-  return (
-    <AppProvider>
-      <AppBody />
-    </AppProvider>
-  );
+export default async function Home() {
+  const initial = await getInitialData();
+  return <App initial={initial} />;
 }

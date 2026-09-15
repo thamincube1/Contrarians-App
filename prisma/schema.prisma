@@ -1,0 +1,314 @@
+// HAUSWERK operations app — data model.
+// Mirrors the shapes the UI already consumes (see lib/mock-data.ts, now
+// retired) so the read/write layer in lib/data.ts and lib/actions.ts can
+// map straight onto what the components already render.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StaffRole {
+  LANDLORD
+  CARETAKER
+}
+
+enum UnitStatus {
+  OCCUPIED
+  VACANT
+  NOTICE
+}
+
+enum LeaseStatus {
+  ACTIVE
+  ENDED
+}
+
+enum TenantStatus {
+  ACTIVE
+  OFFBOARDED
+}
+
+enum PurgeMode {
+  ANONYMISE
+  HARD_DELETE
+}
+
+enum TicketStatus {
+  LOGGED
+  IN_PROGRESS
+  AWAITING_PARTS
+  RESOLVED
+}
+
+enum TicketPriority {
+  ROUTINE
+  URGENT
+  EMERGENCY
+}
+
+enum ReportedVia {
+  WHATSAPP
+  IN_PERSON
+  PHONE
+  EMAIL
+  INSPECTION
+}
+
+enum InspectionType {
+  MOVE_IN
+  MOVE_OUT
+}
+
+enum InspectionCondition {
+  GOOD
+  FAIR
+  DAMAGE_NOTED
+  PENDING
+}
+
+model Property {
+  id        String   @id @default(cuid())
+  key       String   @unique // stable slug e.g. "fh" — matches the old mock property ids
+  name      String
+  prefix    String
+  baseRent  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  units               Unit[]
+  levies              Levy[]
+  staffAssignments    StaffPropertyAssignment[]
+}
+
+model Unit {
+  id          String     @id @default(cuid())
+  label       String     @unique // "FH-101"
+  propertyId  String
+  property    Property   @relation(fields: [propertyId], references: [id])
+  rent        Int
+  status      UnitStatus @default(OCCUPIED)
+  vacantSince DateTime?
+  meterNumber String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  leases               Lease[]
+  maintenanceTickets   MaintenanceTicket[]
+  electricityPurchases ElectricityPurchase[]
+  inspections          Inspection[]
+
+  @@index([propertyId])
+}
+
+model Tenant {
+  id        String       @id @default(cuid())
+  name      String
+  phone     String
+  status    TenantStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  leases Lease[]
+}
+
+model Lease {
+  id           String      @id @default(cuid())
+  unitId       String
+  unit         Unit        @relation(fields: [unitId], references: [id])
+  tenantId     String
+  tenant       Tenant      @relation(fields: [tenantId], references: [id])
+  status       LeaseStatus @default(ACTIVE)
+  moveInDate   DateTime
+  leaseEndDate DateTime
+  monthlyRent  Int
+  depositHeld  Int
+  balance      Int         @default(0)
+  demandSent   Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  payments    Payment[]
+  offboarding TenantOffboarding?
+
+  @@index([unitId])
+  @@index([tenantId])
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  leaseId   String
+  lease     Lease    @relation(fields: [leaseId], references: [id])
+  amount    Int
+  paidAt    DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  @@index([leaseId])
+}
+
+// The receipt for an offboarding — written before the tenant is removed or
+// anonymised, so the act itself survives the act.
+model TenantOffboarding {
+  id             String    @id @default(cuid())
+  leaseId        String    @unique
+  lease          Lease     @relation(fields: [leaseId], references: [id])
+  tenantSnapshot Json
+  purgeMode      PurgeMode
+  performedAt    DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+}
+
+model ElectricityPurchase {
+  id          String   @id @default(cuid())
+  unitId      String
+  unit        Unit     @relation(fields: [unitId], references: [id])
+  purchasedOn DateTime
+  amount      Int
+  kwh         Int
+  token       String
+  recharge    Boolean  @default(false)
+  // Fixed display position for the seeded fixtures (null for purchases
+  // captured through the app) — the ledger shows freshly captured
+  // purchases above the fixtures, in newest-first order.
+  seedOrder   Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([unitId, token])
+  @@index([unitId])
+}
+
+model Levy {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id])
+  period     DateTime // first of the billed month
+  amount     Int
+  note       String
+  // Fixed display position for the seeded fixtures (null for levies
+  // captured through the app) — the ledger shows the fixtures first, in
+  // their original order, with freshly captured levies appended after.
+  seedOrder  Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([propertyId])
+}
+
+model MaintenanceTicket {
+  id          String         @id @default(cuid())
+  ref         String         @unique // "MR-2411"
+  unitId      String
+  unit        Unit           @relation(fields: [unitId], references: [id])
+  title       String
+  description String
+  status      TicketStatus   @default(LOGGED)
+  priority    TicketPriority
+  reportedVia ReportedVia
+  viaLabel    String // exact prototype display text, e.g. "WhatsApp · P. Nel"
+  metaLabel   String // exact prototype display text, e.g. "Logged 31 Aug 07:12 · 3 photos"
+  assigneeId  String?
+  assignee    StaffMember?   @relation(fields: [assigneeId], references: [id])
+  loggedAt    DateTime
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  photos TicketPhoto[]
+  events TicketEvent[]
+
+  @@index([unitId])
+  @@index([assigneeId])
+}
+
+model TicketPhoto {
+  id        String            @id @default(cuid())
+  ticketId  String
+  ticket    MaintenanceTicket @relation(fields: [ticketId], references: [id])
+  label     String
+  createdAt DateTime          @default(now())
+
+  @@index([ticketId])
+}
+
+model TicketEvent {
+  id        String            @id @default(cuid())
+  ticketId  String
+  ticket    MaintenanceTicket @relation(fields: [ticketId], references: [id])
+  whenLabel String // exact prototype display text, e.g. "31 Aug 07:12"
+  what      String
+  createdAt DateTime          @default(now())
+
+  @@index([ticketId])
+}
+
+model Inspection {
+  id                String              @id @default(cuid())
+  ref               String              @unique // "IN-01"
+  unitId            String
+  unit              Unit                @relation(fields: [unitId], references: [id])
+  type              InspectionType
+  condition         InspectionCondition
+  inspectedOn       DateTime?
+  caretakerId       String?
+  caretaker         StaffMember?        @relation(fields: [caretakerId], references: [id])
+  photoCount        Int                 @default(0)
+  tenantLabelAtTime String // snapshot of the tenant/vacancy display name at inspection time
+  // Fixed display position for the seeded fixtures (null for inspections
+  // captured through the app) — the table shows the fixtures first, in
+  // their original order, with freshly logged inspections appended after.
+  seedOrder         Int?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  checklistItems InspectionChecklistItem[]
+
+  @@index([unitId])
+  @@index([caretakerId])
+}
+
+model InspectionChecklistItem {
+  id           String     @id @default(cuid())
+  inspectionId String
+  inspection   Inspection @relation(fields: [inspectionId], references: [id])
+  label        String
+  ok           Boolean    @default(true)
+  note         String?
+  createdAt    DateTime   @default(now())
+
+  @@index([inspectionId])
+}
+
+model StaffMember {
+  id              String    @id @default(cuid())
+  name            String
+  role            StaffRole
+  canCloseTickets Boolean   @default(false)
+  canCloseLabel   String // exact prototype display text for the "Can close tickets" column
+  lastActiveAt    DateTime  @default(now())
+  lastActiveLabel String // exact prototype display text, e.g. "12 min ago"
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  propertyAssignments StaffPropertyAssignment[]
+  ticketsAssigned     MaintenanceTicket[]
+  inspections         Inspection[]
+}
+
+// caretaker_assignments — per-property scoping. RLS in a real deployment
+// would read this on every caretaker query; unassignedAt is kept rather
+// than deleting the row so staff turnover stays as history.
+model StaffPropertyAssignment {
+  id           String    @id @default(cuid())
+  staffId      String
+  staff        StaffMember @relation(fields: [staffId], references: [id])
+  propertyId   String
+  property     Property  @relation(fields: [propertyId], references: [id])
+  assignedAt   DateTime  @default(now())
+  unassignedAt DateTime?
+
+  @@unique([staffId, propertyId])
+}
