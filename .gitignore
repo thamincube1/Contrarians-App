@@ -37,6 +37,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# generated PDFs (dev storage fallback — see lib/storage.ts)
+/storage/*
+!/storage/.gitkeep
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

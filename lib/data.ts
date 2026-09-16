@@ -46,7 +46,7 @@ export const INSPECTION_TYPE_VALUE: Record<InspectionType, "MOVE_IN" | "MOVE_OUT
   "Move-out": "MOVE_OUT",
 };
 
-const INSPECTION_CONDITION_LABEL: Record<string, InspectionCondition> = {
+export const INSPECTION_CONDITION_LABEL: Record<string, InspectionCondition> = {
   GOOD: "Good",
   FAIR: "Fair",
   DAMAGE_NOTED: "Damage noted",

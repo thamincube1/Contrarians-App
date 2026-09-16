@@ -109,6 +109,10 @@ model Tenant {
   id        String       @id @default(cuid())
   name      String
   phone     String
+  // Only used as an email delivery address (statements/invoices/letters of
+  // demand — see lib/actions.ts's sendStatementAction et al.); tenants are
+  // not users of this app and never authenticate with it.
+  email     String?
   status    TenantStatus @default(ACTIVE)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
@@ -159,6 +163,10 @@ model TenantOffboarding {
   tenantSnapshot Json
   purgeMode      PurgeMode
   performedAt    DateTime  @default(now())
+  // Where the generated archive PDF (final ledger + move-out inspection
+  // snapshot) landed — see lib/storage.ts. Null until that background step
+  // finishes; the offboarding itself doesn't wait on it.
+  archiveUrl     String?
   createdAt      DateTime  @default(now())
 }
 

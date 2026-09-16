@@ -17,7 +17,7 @@ Landlord/Caretaker boundary at the database layer.
   Modernist design tokens (`app/globals.css`)
 - System font stack (`-apple-system`, …)
 - PostgreSQL via Prisma ORM — schema in `prisma/schema.prisma`, reads in
-  `lib/data.ts`, writes via Server Actions in `lib/actions.ts`
+  `lib/data.ts`, writes via Server Actions in `lib/actions.tsx`
 - Auth.js (NextAuth v5) with a Credentials provider — `lib/auth.ts`
 - Postgres row-level security on Tenant/Lease/Payment/TenantOffboarding —
   `prisma/migrations/*_add_rls_policies`, applied via `lib/prisma-rls.ts`
@@ -25,6 +25,9 @@ Landlord/Caretaker boundary at the database layer.
   `app/manifest.ts` (installability), and an IndexedDB offline outbox
   (`idb` library) for the repair/inspection forms — `lib/outbox.ts` +
   `lib/outbox-sync.ts`
+- PDF generation with `@react-pdf/renderer` (`lib/pdf/`) and email delivery
+  via Resend (`lib/email.ts`) for tenant statements, invoices, letters of
+  demand, and the offboarding archive
 
 ## Getting started
 
@@ -42,6 +45,13 @@ Landlord/Caretaker boundary at the database layer.
      non-owner role/user with `SELECT/INSERT/UPDATE/DELETE` on the schema.
    - `AUTH_SECRET` — a random secret for signing sessions (`openssl rand
      -base64 32`).
+   - `RESEND_API_KEY` — optional for local dev. Leave it empty and
+     `lib/email.ts` logs every statement/invoice/demand/archive email (with
+     attachment name and size) to the console instead of calling Resend.
+     Set a real key to actually send, via the shared `RESEND_FROM_EMAIL`
+     dev sender (`onboarding@resend.dev`, no domain verification needed —
+     but only deliverable to your own Resend account email until you
+     verify one).
 2. Install dependencies and set up the schema:
 
    ```bash
@@ -92,15 +102,17 @@ anymore — role comes entirely from the authenticated session.
   inspection form, ticket detail) plus the design-notes panel
 - `components/modals/` — Offboard tenant and Record payment dialogs
 - `lib/store.tsx` — client-side app state (navigation, form drafts, cached
-  data) and the actions components call; delegates persistence to `lib/actions.ts`.
+  data) and the actions components call; delegates persistence to `lib/actions.tsx`.
   The signed-in role is passed in once from the server and never changes client-side
 - `lib/data.ts` — server-only Prisma reads, mapped into the exact shapes the
   UI already expects (`lib/types.ts`); `getUnits()` is the one read that
   touches tenant-sensitive tables and goes through the RLS-scoped connection
-- `lib/actions.ts` — Server Actions for every write (payments, electricity/levy
-  capture, ticket status changes, tenant offboarding, caretaker submissions);
-  every action calls `verifySession()` first, and the ones touching
-  Tenant/Lease/Payment/TenantOffboarding run inside `withRlsContext()`
+- `lib/actions.tsx` — Server Actions for every write (payments, electricity/levy
+  capture, ticket status changes, tenant offboarding, caretaker submissions,
+  statement/invoice/demand emails); every action calls `verifySession()`
+  first, and the ones touching Tenant/Lease/Payment/TenantOffboarding run
+  inside `withRlsContext()`. `.tsx` because it renders react-pdf documents
+  inline before emailing them
 - `lib/auth.ts` — Auth.js config (Credentials provider, JWT sessions)
 - `lib/dal.ts` — `verifySession()`, the one place routes/actions check who's
   signed in; redirects to `/login` if there's no session
@@ -140,6 +152,15 @@ anymore — role comes entirely from the authenticated session.
   online submit uses, in order, with capped exponential backoff per item
 - `components/caretaker/Outbox.tsx` — the queued/syncing/synced/retrying
   status list on the caretaker Home screen, hidden once the queue is empty
+- `lib/pdf/` — the three `@react-pdf/renderer` document templates
+  (`StatementDocument.tsx`, doubling as the letter-of-demand attachment via
+  a `variant` prop; `InvoiceDocument.tsx`; `ArchiveDocument.tsx`), shared
+  `theme.ts` styles, and `render.ts`'s `renderPdfToBuffer()`
+- `lib/email.ts` — `sendEmailWithAttachment()`, the one place that calls
+  Resend (or dev-mode console-logs instead — see Getting started)
+- `lib/storage.ts` — `storeArchivePdf()`, the offboarding archive's
+  storage seam; writes to `storage/` (gitignored) locally, documented to
+  swap for Vercel Blob/S3 in production without touching any caller
 
 ## Notes on authorization
 
@@ -150,7 +171,7 @@ Three layers, from outermost to innermost:
    before the route even renders.
 2. **`lib/dal.ts` + route layouts/pages** — `verifySession()` is called in
    every `/landlord` and `/caretaker` layout and page, and in every Server
-   Action in `lib/actions.ts`. This is the real authentication check.
+   Action in `lib/actions.tsx`. This is the real authentication check.
 3. **Postgres row-level security** — even if every check above were somehow
    bypassed, a `CARETAKER`-scoped query physically cannot return Tenant,
    Lease, Payment or TenantOffboarding rows outside that caretaker's
@@ -213,6 +234,26 @@ duplicate ticket or inspection. Verified by submitting both forms with
 DevTools/Playwright network offline, reconnecting, and confirming exactly
 one row of each lands in Postgres.
 
+## Notes on PDFs and email
+
+Three `@react-pdf/renderer` templates (`lib/pdf/`) cover every generated
+document: a tenant statement, an invoice, and the offboarding archive. The
+letter of demand is the statement template rendered with `variant="demand"`
+rather than a fourth template — same ledger numbers, a sterner heading and
+intro paragraph, so the two can never drift apart on what a tenant owes.
+
+All three landlord-triggered sends ("Email statement", "Email invoice",
+"Send letter of demand" on the tenant record) follow the same shape in
+`lib/actions.tsx`: gather the lease/tenant/payment data through the
+RLS-scoped connection, render the PDF, and call `sendEmailWithAttachment()`
+addressed to `Tenant.email`. The action's `ok` field means "the underlying
+business action happened" (there was an active lease; there was an overdue
+balance to demand) independently of `emailed`, which is `true` once the PDF
+actually went out — via Resend, or via the dev-mode console log when
+`RESEND_API_KEY` is unset. The tenant record's toast reflects both: e.g.
+"Statement generated for S. Mokoena · emailed" vs "· email logged (dev
+mode)" vs "· No email on file for this tenant".
+
 ## Notes on the offboarding flow
 
 "Offboard & anonymise" and "Erase completely" both end the lease, free the
@@ -222,3 +263,17 @@ tenant row so financial history stays intact, matching the design spec's
 warning against destroying it with a naive delete. "Erase completely"
 additionally deletes the lease's payment history. A `TenantOffboarding` row
 is written first as an audit snapshot of what the tenant record held.
+
+The archive PDF (final ledger + payment history + the unit's most recent
+move-out inspection, checklist and photo count included) is generated right
+after that transaction commits — not inside it, since PDF rendering, disk
+I/O and the email send are all slow enough that holding a database
+transaction open for them would risk a timeout for no reason. The data
+itself (tenant/lease/payments/inspection) is still captured from inside the
+transaction, before the tenant row is anonymised, so the PDF reflects
+exactly what was true at the moment of offboarding. Once rendered, it's
+written via `storeArchivePdf()` (`storage/archives/` locally), the
+resulting reference is saved to `TenantOffboarding.archiveUrl` in a second
+short RLS-scoped update, and a copy is emailed to the landlord who
+performed the offboarding as an audit record (tenants have no login and
+aren't the recipient here — the offboarding operator is).

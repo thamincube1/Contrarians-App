@@ -4,7 +4,7 @@ import { useApp, useDerived, TENANT_ELEC_HISTORY } from "@/lib/store";
 import Tag from "@/components/ui/Tag";
 
 export default function TenantRecord() {
-  const { state, R, goScreen, openPayment, openOffboard, sendDemand, stubbed } = useApp();
+  const { state, R, goScreen, openPayment, openOffboard, sendDemand, sendStatement, sendInvoice } = useApp();
   const { tenant: t, bal, graceDays, lateFee, allInspections } = useDerived();
 
   if (!t) return <div className="p-6">No tenant selected.</div>;
@@ -54,8 +54,11 @@ export default function TenantRecord() {
             <button type="button" onClick={openPayment} className="btn btn-primary text-[13px] px-3.5 py-2">
               Record payment
             </button>
-            <button type="button" onClick={() => stubbed("Email statement")} className="btn btn-secondary text-[13px] px-3.5 py-2">
+            <button type="button" onClick={sendStatement} className="btn btn-secondary text-[13px] px-3.5 py-2">
               Email statement
+            </button>
+            <button type="button" onClick={sendInvoice} className="btn btn-secondary text-[13px] px-3.5 py-2">
+              Email invoice
             </button>
             <button
               type="button"

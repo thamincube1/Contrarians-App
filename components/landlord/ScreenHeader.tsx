@@ -21,7 +21,6 @@ const ACTIONS: Partial<Record<LandlordScreen, [string, boolean][]>> = {
   units: [["Import rent roll", false], ["Add unit", true]],
   tickets: [["Assign vendor", false]],
   electricity: [["CSV import", false], ["Batch capture", true]],
-  tenant: [["Email statement", false]],
   staff: [["Invite staff", true]],
 };
 

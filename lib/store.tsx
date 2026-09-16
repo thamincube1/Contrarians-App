@@ -8,6 +8,9 @@ import {
   saveLevyAction,
   savePaymentAction,
   sendDemandAction,
+  sendInvoiceAction,
+  sendStatementAction,
+  type EmailActionResult,
 } from "./actions";
 import { CATS, TENANT_ELEC_HISTORY } from "./constants";
 import type { InitialData } from "./data";
@@ -36,6 +39,13 @@ import type {
 const GRACE_DAYS = 5;
 const LATE_FEE = 250;
 const TODAY_LABEL = "02 Sep 2026";
+
+/** Turns an email Server Action's result into one toast line. */
+function emailStatusMessage(result: EmailActionResult, doneLabel: string): string {
+  if (result.devMode) return doneLabel + " · email logged (dev mode)";
+  if (result.emailed) return doneLabel + " · emailed";
+  return doneLabel + " · " + (result.reason ?? "email not sent");
+}
 
 // ---- live module-level exports ----
 // Dashboard.tsx, Levies.tsx, Electricity.tsx and Staff.tsx import PROPS /
@@ -131,6 +141,8 @@ interface AppContextValue {
   setPayAmount: (v: string) => void;
   savePayment: () => void;
   sendDemand: () => void;
+  sendStatement: () => void;
+  sendInvoice: () => void;
 
   openOffboard: () => void;
   closeOffboard: () => void;
@@ -312,13 +324,39 @@ export function AppProvider({
         const unitId = t.id;
         const tenantName = t.tenant;
         void (async () => {
-          const ok = await sendDemandAction({ unitId });
-          if (!ok) {
-            flash("No overdue balance — nothing to send");
+          const result = await sendDemandAction({ unitId });
+          if (!result.ok) {
+            flash(result.reason ?? "No overdue balance — nothing to send");
             return;
           }
           patch((s) => ({ demandSent: { ...s.demandSent, [unitId]: true } }));
-          flash("Letter of demand generated for " + tenantName + " · emailed & queued for post");
+          flash(emailStatusMessage(result, "Letter of demand generated for " + tenantName));
+        })();
+      },
+      sendStatement: () => {
+        if (!t) return;
+        const unitId = t.id;
+        const tenantName = t.tenant;
+        void (async () => {
+          const result = await sendStatementAction({ unitId });
+          flash(
+            result.ok
+              ? emailStatusMessage(result, "Statement generated for " + tenantName)
+              : result.reason ?? "Could not generate statement"
+          );
+        })();
+      },
+      sendInvoice: () => {
+        if (!t) return;
+        const unitId = t.id;
+        const tenantName = t.tenant;
+        void (async () => {
+          const result = await sendInvoiceAction({ unitId });
+          flash(
+            result.ok
+              ? emailStatusMessage(result, "Invoice generated for " + tenantName)
+              : result.reason ?? "Could not generate invoice"
+          );
         })();
       },
 

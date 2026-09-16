@@ -93,9 +93,16 @@ async function main() {
         const moveInMonth = (seed % 9) + 1;
         const moveInYear = 2022 + (seed % 4);
         const phone = "+27 82 " + (100 + (seed % 800)) + " " + (1000 + ((seed * 7) % 9000));
+        // Dev fixture address — not a deliverable inbox. Lets the
+        // statement/invoice/demand email flows have somewhere to send to.
+        const email =
+          tenantName
+            .toLowerCase()
+            .replace(/[^a-z]+/g, ".")
+            .replace(/^\.|\.$/g, "") + "@example.com";
 
         const tenant = await prisma.tenant.create({
-          data: { name: tenantName, phone, status: "ACTIVE" },
+          data: { name: tenantName, phone, email, status: "ACTIVE" },
         });
         await prisma.lease.create({
           data: {
