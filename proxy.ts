@@ -33,5 +33,9 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // sw.js and manifest.webmanifest must be fetchable while signed out — the
+  // browser requests the manifest from <head> and registers the service
+  // worker on every page load, /login included, and a stale offline page
+  // is exactly the case where that request must not get redirected away.
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sw\\.js|manifest\\.webmanifest|icons/).*)"],
 };

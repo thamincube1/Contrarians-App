@@ -21,6 +21,10 @@ Landlord/Caretaker boundary at the database layer.
 - Auth.js (NextAuth v5) with a Credentials provider — `lib/auth.ts`
 - Postgres row-level security on Tenant/Lease/Payment/TenantOffboarding —
   `prisma/migrations/*_add_rls_policies`, applied via `lib/prisma-rls.ts`
+- A hand-rolled PWA for the caretaker shell: `public/sw.js` (service worker),
+  `app/manifest.ts` (installability), and an IndexedDB offline outbox
+  (`idb` library) for the repair/inspection forms — `lib/outbox.ts` +
+  `lib/outbox-sync.ts`
 
 ## Getting started
 
@@ -120,6 +124,22 @@ anymore — role comes entirely from the authenticated session.
 - `prisma/seed.ts` — loads the same fixture dataset the app used to generate
   in memory, so the UI looks identical to the original mock-data prototype,
   plus the two dev logins above
+- `public/sw.js` — the service worker: cache-first for static assets,
+  network-first-with-cache-fallback for page navigations (so a reopened
+  `/caretaker` still renders offline from the last successful load), and a
+  `sync` event handler for Background Sync (see below)
+- `app/manifest.ts` — the web app manifest (installable, `start_url:
+  "/caretaker"`), served at `/manifest.webmanifest` and auto-linked by Next
+- `components/ServiceWorkerRegistration.tsx` — registers `public/sw.js` on
+  every page load, mounted in the root layout
+- `lib/outbox.ts` — the IndexedDB queue (via the `idb` library) the repair
+  and inspection forms write to on submit, online or not; each entry gets a
+  client-generated UUID that doubles as the server's idempotency key
+- `lib/outbox-sync.ts` — flushes the queue through the same
+  `submitTicketAction`/`submitInspectionAction` Server Actions a normal
+  online submit uses, in order, with capped exponential backoff per item
+- `components/caretaker/Outbox.tsx` — the queued/syncing/synced/retrying
+  status list on the caretaker Home screen, hidden once the queue is empty
 
 ## Notes on authorization
 
@@ -152,6 +172,46 @@ SELECT set_config('app.current_staff_id', '<a caretaker StaffMember.id>', true);
 SELECT count(*) FROM "Tenant"; -- only rows for that caretaker's assigned properties
 ROLLBACK;
 ```
+
+## Notes on offline support (caretaker PWA)
+
+The caretaker's repair and inspection forms never call a Server Action
+directly. Submitting always writes to an IndexedDB queue first
+(`lib/outbox.ts`), then a flush is attempted immediately — one code path
+whether the caretaker is online or not, rather than branching on
+`navigator.onLine` (unreliable, especially on flaky mobile signal). A queued
+entry shows on the caretaker's Home screen (`components/caretaker/Outbox.tsx`)
+with a status of Queued → Syncing → Synced (or Retrying, with the error, if
+a sync attempt fails), so nothing silently disappears.
+
+Flushing is triggered by, in rough order of how often each one fires:
+
+1. Immediately after enqueueing.
+2. The browser's `online` event.
+3. A 5-second interval, for transient failures unrelated to connectivity.
+4. The service worker waking the page after a Background Sync event.
+
+On (4): a service worker has no React/Next runtime and can't invoke a
+Server Action's encoded RPC directly, so `sync-outbox` (registered in
+`lib/outbox.ts` via `ServiceWorkerRegistration.sync.register`) just
+`postMessage`s any open tab to run the same in-page flush described above.
+If no tab is open when connectivity returns, the outbox waits for the next
+page load or `online` event instead — still durable, just not
+truly-backgrounded on every browser (Background Sync itself is
+Chromium-only; the `online`-event and on-load flush paths are the ones that
+work everywhere).
+
+**Idempotency**: every outbox entry carries a client-generated UUID
+(`crypto.randomUUID()`), stored as `MaintenanceTicket.clientId` /
+`Inspection.clientId` (both `@unique`) once synced. `submitTicketAction`
+and `submitInspectionAction` check for that `clientId` before writing, and
+also catch the unique-constraint violation if two flush attempts race each
+other, re-reading whichever one won — so a retried flush (background sync
+firing while the in-page interval is also mid-attempt, a device dying after
+the server commits but before the response arrives, …) can never create a
+duplicate ticket or inspection. Verified by submitting both forms with
+DevTools/Playwright network offline, reconnecting, and confirming exactly
+one row of each lands in Postgres.
 
 ## Notes on the offboarding flow
 

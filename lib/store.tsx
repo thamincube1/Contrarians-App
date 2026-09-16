@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   advanceTicketStatusAction,
   confirmOffboardAction,
@@ -8,12 +8,12 @@ import {
   saveLevyAction,
   savePaymentAction,
   sendDemandAction,
-  submitInspectionAction,
-  submitTicketAction,
 } from "./actions";
 import { CATS, TENANT_ELEC_HISTORY } from "./constants";
 import type { InitialData } from "./data";
 import { daysSince, formatR } from "./format";
+import { enqueue as enqueueOutbox, type OutboxItem } from "./outbox";
+import { flushOutbox, refreshOutbox, subscribeOutbox } from "./outbox-sync";
 import type {
   CaretakerScreen,
   ElecFormState,
@@ -112,6 +112,7 @@ interface AppContextValue {
   tickets: Ticket[];
   inspectionsBase: Inspection[];
   leviesBase: Levy[];
+  outbox: OutboxItem[];
   R: (n: number) => string;
   flash: (m: string) => void;
   goScreen: (s: LandlordScreen) => void;
@@ -174,6 +175,7 @@ export function AppProvider({
   // Fixed fixtures — no write action in this app edits or removes them.
   const [inspectionsBase] = useState(initial.inspectionsBase);
   const [leviesBase] = useState(initial.leviesBase);
+  const [outbox, setOutbox] = useState<OutboxItem[]>([]);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const patch = useCallback((p: Partial<AppState> | ((s: AppState) => Partial<AppState>)) => {
@@ -188,6 +190,38 @@ export function AppProvider({
 
   const R = formatR;
 
+  // Runs a flush attempt against the offline outbox: every queued
+  // repair/inspection tries the real server action, in order, respecting
+  // each item's own backoff. A synced inspection is spliced into
+  // inspectExtra here (not at submit time), since offline the real row
+  // doesn't exist server-side yet — see lib/outbox-sync.ts.
+  const runFlush = useCallback(() => {
+    if (state.offline) return; // simulated offline — don't fight the demo toggle
+    void flushOutbox((row) => patch((s) => ({ inspectExtra: [row, ...s.inspectExtra] })));
+  }, [state.offline, patch]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeOutbox(setOutbox);
+    void refreshOutbox();
+    runFlush();
+
+    window.addEventListener("online", runFlush);
+    const onMessage = (e: MessageEvent) => {
+      if (e.data?.type === "FLUSH_OUTBOX") runFlush();
+    };
+    navigator.serviceWorker?.addEventListener("message", onMessage);
+    // Catches transient (non-connectivity) failures and items whose
+    // backoff window has elapsed, without waiting for another trigger.
+    const interval = setInterval(runFlush, 5000);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("online", runFlush);
+      navigator.serviceWorker?.removeEventListener("message", onMessage);
+      clearInterval(interval);
+    };
+  }, [runFlush]);
+
   const value: AppContextValue = useMemo(() => {
     const t = selectedTenant(state, units);
     const bal = t ? t.balance : 0;
@@ -198,6 +232,7 @@ export function AppProvider({
       tickets,
       inspectionsBase,
       leviesBase,
+      outbox,
       R,
       flash,
       goScreen: (screenId) => patch({ screen: screenId }),
@@ -332,17 +367,22 @@ export function AppProvider({
           return;
         }
         const form = state.form;
-        const offline = state.offline;
+        const offline = state.offline || (typeof navigator !== "undefined" && !navigator.onLine);
         patch({ ct: "home" });
+        // Always queues to the IndexedDB outbox first — online or not —
+        // then tries an immediate flush. A caretaker's newly logged ticket
+        // still doesn't appear on their own list or the landlord's board
+        // until it's actually synced, matching the original prototype; the
+        // Outbox panel on Home is what shows it hasn't silently failed.
+        void enqueueOutbox("ticket", form).then(() => {
+          void refreshOutbox();
+          runFlush();
+        });
         flash(
           offline
             ? "Saved offline · syncs when signal returns"
-            : "MR-2413 logged for " + form.unit.trim().toUpperCase() + " · landlord notified"
+            : "Repair queued for " + form.unit.trim().toUpperCase() + " · syncing…"
         );
-        // A caretaker's newly logged ticket doesn't appear on their own
-        // list or the landlord's board until the next sync, matching the
-        // original prototype — but it is genuinely persisted here.
-        void submitTicketAction(form);
       },
       setInspectField: (p) => patch((s) => ({ inspect: { ...s.inspect, ...p } })),
       addInspectPhoto: () => patch((s) => ({ inspect: { ...s.inspect, photos: Math.min(8, s.inspect.photos + 1) } })),
@@ -352,13 +392,18 @@ export function AppProvider({
           return;
         }
         const inspect = state.inspect;
-        const offline = state.offline;
+        const offline = state.offline || (typeof navigator !== "undefined" && !navigator.onLine);
         const u = inspect.unit.trim().toUpperCase();
-        void (async () => {
-          const row = await submitInspectionAction(inspect);
-          patch((s) => ({ ct: "home", inspectExtra: row ? [row, ...s.inspectExtra] : s.inspectExtra }));
-          flash(offline ? "Saved offline · syncs when signal returns" : inspect.type + " inspection logged for " + u);
-        })();
+        patch({ ct: "home" });
+        void enqueueOutbox("inspection", inspect).then(() => {
+          void refreshOutbox();
+          runFlush();
+        });
+        flash(
+          offline
+            ? "Saved offline · syncs when signal returns"
+            : inspect.type + " inspection queued for " + u + " · syncing…"
+        );
       },
       advanceStatus: (ticketId, status) => {
         void (async () => {
@@ -371,7 +416,7 @@ export function AppProvider({
       stubbed: (label) => flash('Prototype — "' + label + '" is stubbed'),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, units, tickets, inspectionsBase, leviesBase, patch, flash]);
+  }, [state, units, tickets, inspectionsBase, leviesBase, outbox, patch, flash, runFlush]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

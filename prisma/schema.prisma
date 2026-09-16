@@ -202,6 +202,10 @@ model Levy {
 model MaintenanceTicket {
   id          String         @id @default(cuid())
   ref         String         @unique // "MR-2411"
+  // Client-generated UUID from the caretaker's offline outbox (lib/outbox.ts).
+  // Null for seeded/fixture rows. The unique constraint is what makes a
+  // retried background-sync flush idempotent — see submitTicketAction.
+  clientId    String?        @unique
   unitId      String
   unit        Unit           @relation(fields: [unitId], references: [id])
   title       String
@@ -248,6 +252,10 @@ model TicketEvent {
 model Inspection {
   id                String              @id @default(cuid())
   ref               String              @unique // "IN-01"
+  // Client-generated UUID from the caretaker's offline outbox (lib/outbox.ts).
+  // Null for seeded/fixture rows. The unique constraint is what makes a
+  // retried background-sync flush idempotent — see submitInspectionAction.
+  clientId          String?             @unique
   unitId            String
   unit              Unit                @relation(fields: [unitId], references: [id])
   type              InspectionType

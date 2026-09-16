@@ -2,6 +2,7 @@
 
 import { useApp, useDerived } from "@/lib/store";
 import Tag from "@/components/ui/Tag";
+import Outbox from "./Outbox";
 
 const STATUS_TAG: Record<string, [string, string]> = {
   Logged: ["#ffc4b8", "#7c1405"],
@@ -39,6 +40,7 @@ export default function Home() {
           Log a move-in / move-out inspection
         </button>
       </div>
+      <Outbox />
       <div className="py-3.5 px-4 pb-1.5 text-[11px] font-extrabold tracking-[0.08em] uppercase">My tickets</div>
       <div className="grid gap-2 px-4 pb-4">
         {tickets.map((t) => {

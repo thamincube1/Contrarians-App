@@ -1,5 +1,6 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import { withRlsContext } from "./prisma-rls";
 import { verifySession, actorFromSession } from "./dal";
@@ -15,6 +16,20 @@ import type {
 } from "./types";
 
 const TODAY = new Date(2026, 8, 2); // the app's fixed in-story "today"
+
+/** True when `err` is a unique-constraint violation on `field`. */
+function isUniqueViolation(err: unknown, field: string): boolean {
+  return (
+    err instanceof Prisma.PrismaClientKnownRequestError &&
+    err.code === "P2002" &&
+    !!(err.meta?.target as string[] | undefined)?.includes(field)
+  );
+}
+
+export interface SubmitResult {
+  ok: boolean;
+  reason?: string;
+}
 
 function randomToken(): string {
   const block = () => Math.floor(1000 + Math.random() * 8999);
@@ -179,14 +194,27 @@ export async function confirmOffboardAction(input: {
 
 // ---- Caretaker writes ----
 
-export async function submitTicketAction(input: RepairFormState): Promise<void> {
+// Both caretaker submissions below take a client-generated `clientId` (a
+// UUID minted by the offline outbox — see lib/outbox.ts) and are written to
+// be safely retried: the offline outbox always flushes optimistically and
+// may call these more than once for the same entry (the caretaker's device
+// dies mid-flush, two tabs race, a background-sync retry overlaps an
+// in-page one, …). `clientId` is unique in the schema, so a repeat call
+// either finds the row it already created and returns success without
+// writing again, or hits the unique constraint on a true concurrent race
+// and re-reads the winner — never a duplicate ticket/inspection.
+
+export async function submitTicketAction(
+  input: RepairFormState & { clientId: string }
+): Promise<SubmitResult> {
   await verifySession();
 
-  const unit = await prisma.unit.findUnique({ where: { label: input.unit.trim().toUpperCase() } });
-  if (!unit) return;
+  const existing = await prisma.maintenanceTicket.findUnique({ where: { clientId: input.clientId } });
+  if (existing) return { ok: true };
 
-  const count = await prisma.maintenanceTicket.count();
-  const ref = "MR-" + (2414 + count);
+  const unit = await prisma.unit.findUnique({ where: { label: input.unit.trim().toUpperCase() } });
+  if (!unit) return { ok: false, reason: "Unit not found — check the unit number" };
+
   const priorityMap: Record<RepairFormState["urgency"], "ROUTINE" | "URGENT" | "EMERGENCY"> = {
     Routine: "ROUTINE",
     Urgent: "URGENT",
@@ -198,33 +226,65 @@ export async function submitTicketAction(input: RepairFormState): Promise<void> 
     Phone: "PHONE",
   };
 
-  await prisma.maintenanceTicket.create({
-    data: {
-      ref,
-      unitId: unit.id,
-      title: input.desc.slice(0, 80) || input.cat,
-      description: input.desc || input.cat,
-      status: "LOGGED",
-      priority: priorityMap[input.urgency],
-      reportedVia: viaMap[input.via],
-      viaLabel: input.via,
-      metaLabel: `Logged ${formatDayMonthYear(TODAY)} · ${input.photos} photo${input.photos === 1 ? "" : "s"}`,
-      loggedAt: TODAY,
-      events: { create: [{ whenLabel: formatDayMonthYear(TODAY), what: `Logged by caretaker via ${input.via}` }] },
-    },
-  });
+  try {
+    const count = await prisma.maintenanceTicket.count();
+    const ref = "MR-" + (2414 + count);
+    await prisma.maintenanceTicket.create({
+      data: {
+        ref,
+        clientId: input.clientId,
+        unitId: unit.id,
+        title: input.desc.slice(0, 80) || input.cat,
+        description: input.desc || input.cat,
+        status: "LOGGED",
+        priority: priorityMap[input.urgency],
+        reportedVia: viaMap[input.via],
+        viaLabel: input.via,
+        metaLabel: `Logged ${formatDayMonthYear(TODAY)} · ${input.photos} photo${input.photos === 1 ? "" : "s"}`,
+        loggedAt: TODAY,
+        events: { create: [{ whenLabel: formatDayMonthYear(TODAY), what: `Logged by caretaker via ${input.via}` }] },
+      },
+    });
+  } catch (err) {
+    // Lost the race to a concurrent retry that created the same clientId
+    // first — that attempt's success is this attempt's success too.
+    if (!isUniqueViolation(err, "clientId")) throw err;
+  }
+
   // Deliberately not returned to the caller: a caretaker's newly logged
   // ticket does not appear on their own "My tickets" list or the landlord's
   // board until the next sync/load, matching the original prototype.
+  return { ok: true };
 }
 
-export async function submitInspectionAction(input: InspectFormState): Promise<Inspection | null> {
+export interface SubmitInspectionResult extends SubmitResult {
+  row?: Inspection;
+}
+
+export async function submitInspectionAction(
+  input: InspectFormState & { clientId: string }
+): Promise<SubmitInspectionResult> {
   const session = await verifySession();
   const actor = actorFromSession(session);
 
   const label = input.unit.trim().toUpperCase();
   const unit = await prisma.unit.findUnique({ where: { label }, include: { property: true } });
-  if (!unit) return null;
+  if (!unit) return { ok: false, reason: "Unit not found — check the unit number" };
+
+  const toShape = (r: { ref: string; tenantLabelAtTime: string; photoCount: number }): Inspection => ({
+    id: r.ref,
+    unit: unit.label,
+    property: unit.property.name,
+    type: input.type,
+    date: formatDayMonthYear(TODAY),
+    tenant: r.tenantLabelAtTime,
+    condition: input.condition,
+    caretaker: session.user.name,
+    photos: r.photoCount,
+  });
+
+  const existing = await prisma.inspection.findUnique({ where: { clientId: input.clientId } });
+  if (existing) return { ok: true, row: toShape(existing) };
 
   // Tenant/Lease are RLS-protected — a caretaker outside this unit's
   // property assignment gets no row back and the inspection is logged
@@ -237,34 +297,30 @@ export async function submitInspectionAction(input: InspectFormState): Promise<I
   );
   const tenantLabel = lease?.tenant.name ?? "Vacant";
 
-  const count = await prisma.inspection.count();
-  const ref = "IN-" + (90 + count);
-
-  const row = await prisma.inspection.create({
-    data: {
-      ref,
-      unitId: unit.id,
-      type: INSPECTION_TYPE_VALUE[input.type],
-      condition: INSPECTION_CONDITION_VALUE[input.condition],
-      inspectedOn: TODAY,
-      photoCount: input.photos,
-      tenantLabelAtTime: tenantLabel,
-      caretakerId: session.user.staffId,
-      seedOrder: null,
-    },
-  });
-
-  return {
-    id: row.ref,
-    unit: unit.label,
-    property: unit.property.name,
-    type: input.type,
-    date: formatDayMonthYear(TODAY),
-    tenant: tenantLabel,
-    condition: input.condition,
-    caretaker: session.user.name,
-    photos: input.photos,
-  };
+  try {
+    const count = await prisma.inspection.count();
+    const ref = "IN-" + (90 + count);
+    const row = await prisma.inspection.create({
+      data: {
+        ref,
+        clientId: input.clientId,
+        unitId: unit.id,
+        type: INSPECTION_TYPE_VALUE[input.type],
+        condition: INSPECTION_CONDITION_VALUE[input.condition],
+        inspectedOn: TODAY,
+        photoCount: input.photos,
+        tenantLabelAtTime: tenantLabel,
+        caretakerId: session.user.staffId,
+        seedOrder: null,
+      },
+    });
+    return { ok: true, row: toShape(row) };
+  } catch (err) {
+    if (!isUniqueViolation(err, "clientId")) throw err;
+    // Lost the race to a concurrent retry — read back what it created.
+    const raced = await prisma.inspection.findUnique({ where: { clientId: input.clientId } });
+    return raced ? { ok: true, row: toShape(raced) } : { ok: false, reason: "Sync conflict — please retry" };
+  }
 }
 
 export async function advanceTicketStatusAction(input: { ticketRef: string; status: TicketStatus }): Promise<void> {
