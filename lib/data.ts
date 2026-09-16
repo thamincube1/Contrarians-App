@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
+import { withRlsContext, type RlsActor } from "./prisma-rls";
 import { formatDateSlash, formatDayMonthYear, formatMonthSlashYear, formatMonthYear } from "./format";
 import type {
   Inspection,
@@ -74,16 +75,39 @@ export async function getProperties(): Promise<PropertyDef[]> {
   }));
 }
 
-export async function getUnits(): Promise<Unit[]> {
-  const rows = await prisma.unit.findMany({
-    include: {
-      property: true,
-      leases: { where: { status: "ACTIVE" }, include: { tenant: true } },
-    },
+/**
+ * Unit is the one UI shape that reaches into tenant-sensitive tables
+ * (Lease.balance, Lease dates, Tenant name/phone), so it's the only read
+ * here that needs the RLS-scoped connection and an acting user. A
+ * caretaker's rows are already row-scoped to their assigned properties by
+ * Postgres RLS (see prisma/migrations/*_add_rls_policies); the redaction
+ * below additionally strips money fields for a caretaker even within
+ * their own scope, matching the design spec ("no money, ever" — see
+ * components/caretaker/DesignNotes.tsx).
+ */
+export async function getUnits(actor: RlsActor): Promise<Unit[]> {
+  const units = await prisma.unit.findMany({
+    include: { property: true },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
   });
-  return rows.map((u) => {
-    const lease = u.leases[0];
+
+  const leases = await withRlsContext(actor, (tx) =>
+    tx.lease.findMany({
+      where: { status: "ACTIVE" },
+      select: {
+        unitId: true,
+        balance: true,
+        leaseEndDate: true,
+        moveInDate: true,
+        tenant: { select: { name: true, phone: true } },
+      },
+    })
+  );
+  const leaseByUnitId = new Map(leases.map((l) => [l.unitId, l]));
+  const isLandlord = actor.role === "LANDLORD";
+
+  return units.map((u) => {
+    const lease = leaseByUnitId.get(u.id);
     return {
       id: u.id,
       label: u.label,
@@ -93,14 +117,14 @@ export async function getUnits(): Promise<Unit[]> {
       // in this flat shape must match that same slug for property-scoped
       // lookups (e.g. Dashboard's occupancy-by-property panel) to work.
       propertyId: u.property.key,
-      rent: u.rent,
+      rent: isLandlord ? u.rent : 0,
       vacant: u.status === "VACANT",
       notice: u.status === "NOTICE",
       vacantSince: u.vacantSince ? formatDayMonthYear(u.vacantSince) : null,
       tenant: lease ? lease.tenant.name : null,
-      balance: lease ? lease.balance : 0,
-      leaseEnd: lease ? formatMonthSlashYear(lease.leaseEndDate) : "",
-      moveIn: lease ? formatDateSlash(lease.moveInDate) : "",
+      balance: isLandlord && lease ? lease.balance : 0,
+      leaseEnd: isLandlord && lease ? formatMonthSlashYear(lease.leaseEndDate) : "",
+      moveIn: isLandlord && lease ? formatDateSlash(lease.moveInDate) : "",
       phone: lease ? lease.tenant.phone : "",
       meter: u.meterNumber,
     };
@@ -272,9 +296,9 @@ export interface InitialData {
   properties: PropertyDef[];
 }
 
-export async function getInitialData(): Promise<InitialData> {
+export async function getInitialData(actor: RlsActor): Promise<InitialData> {
   const [units, tickets, inspections, levies, electricity, staff, properties] = await Promise.all([
-    getUnits(),
+    getUnits(actor),
     getTickets(),
     getInspections(),
     getLevies(),

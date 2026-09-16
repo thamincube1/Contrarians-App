@@ -3,8 +3,12 @@
 // after switching from mock state to Postgres.
 
 import { PrismaClient, ReportedVia, TicketPriority, TicketStatus } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+
+// Dev-only fixed credentials — see README for the login screen.
+const DEV_PASSWORD = "hauswerk-dev";
 
 const NAMES = [
   "A. Botha", "S. Mokoena", "T. Nkosi", "M. Louw", "P. Dlamini", "J. Steenkamp",
@@ -149,6 +153,15 @@ async function main() {
   }
   await prisma.staffPropertyAssignment.create({
     data: { staffId: meyer.id, propertyId: propertyByKey.get("cc")!.id },
+  });
+
+  // ---- Dev logins ----
+  const passwordHash = await bcrypt.hash(DEV_PASSWORD, 10);
+  await prisma.user.create({
+    data: { email: "brandt@hauswerk.dev", passwordHash, role: "LANDLORD", staffId: brandt.id },
+  });
+  await prisma.user.create({
+    data: { email: "nel@hauswerk.dev", passwordHash, role: "CARETAKER", staffId: nel.id },
   });
 
   // ---- Maintenance tickets ----

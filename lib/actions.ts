@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "./prisma";
+import { withRlsContext } from "./prisma-rls";
+import { verifySession, actorFromSession } from "./dal";
 import { formatDayMonthYear, formatMonthYear } from "./format";
 import { INSPECTION_CONDITION_VALUE, INSPECTION_TYPE_VALUE, TICKET_STATUS_VALUE } from "./data";
 import type {
@@ -28,6 +30,9 @@ export async function saveElectricityPurchaseAction(input: {
   token: string;
   recharge: boolean;
 }): Promise<ElectricityPurchaseShape | null> {
+  const session = await verifySession();
+  if (session.user.role !== "LANDLORD") return null;
+
   const unit = await prisma.unit.findUnique({ where: { label: input.unitLabel.trim().toUpperCase() } });
   if (!unit) return null;
 
@@ -60,6 +65,9 @@ export async function saveLevyAction(input: {
   amount: number;
   note: string;
 }): Promise<Levy | null> {
+  const session = await verifySession();
+  if (session.user.role !== "LANDLORD") return null;
+
   const property = await prisma.property.findUnique({ where: { key: input.propertyKey } });
   if (!property) return null;
 
@@ -83,39 +91,53 @@ export async function savePaymentAction(input: {
   unitId: string;
   amount: number;
 }): Promise<{ newBalance: number } | null> {
-  const lease = await prisma.lease.findFirst({ where: { unitId: input.unitId, status: "ACTIVE" } });
-  if (!lease) return null;
+  const session = await verifySession();
+  if (session.user.role !== "LANDLORD") return null;
+  const actor = actorFromSession(session);
 
-  const newBalance = Math.max(0, lease.balance - input.amount);
-  await prisma.$transaction([
-    prisma.payment.create({ data: { leaseId: lease.id, amount: input.amount, paidAt: TODAY } }),
-    prisma.lease.update({ where: { id: lease.id }, data: { balance: newBalance } }),
-  ]);
+  return withRlsContext(actor, async (tx) => {
+    const lease = await tx.lease.findFirst({ where: { unitId: input.unitId, status: "ACTIVE" } });
+    if (!lease) return null;
 
-  return { newBalance };
+    const newBalance = Math.max(0, lease.balance - input.amount);
+    await tx.payment.create({ data: { leaseId: lease.id, amount: input.amount, paidAt: TODAY } });
+    await tx.lease.update({ where: { id: lease.id }, data: { balance: newBalance } });
+
+    return { newBalance };
+  });
 }
 
 export async function sendDemandAction(input: { unitId: string }): Promise<boolean> {
-  const lease = await prisma.lease.findFirst({ where: { unitId: input.unitId, status: "ACTIVE" } });
-  if (!lease || lease.balance <= 0) return false;
-  await prisma.lease.update({ where: { id: lease.id }, data: { demandSent: true } });
-  return true;
+  const session = await verifySession();
+  if (session.user.role !== "LANDLORD") return false;
+  const actor = actorFromSession(session);
+
+  return withRlsContext(actor, async (tx) => {
+    const lease = await tx.lease.findFirst({ where: { unitId: input.unitId, status: "ACTIVE" } });
+    if (!lease || lease.balance <= 0) return false;
+    await tx.lease.update({ where: { id: lease.id }, data: { demandSent: true } });
+    return true;
+  });
 }
 
 export async function confirmOffboardAction(input: {
   unitId: string;
   purgeMode: "anonymise" | "hard";
 }): Promise<{ tenantName: string; unitLabel: string } | null> {
-  const lease = await prisma.lease.findFirst({
-    where: { unitId: input.unitId, status: "ACTIVE" },
-    include: { tenant: true, unit: true },
-  });
-  if (!lease) return null;
+  const session = await verifySession();
+  if (session.user.role !== "LANDLORD") return null;
+  const actor = actorFromSession(session);
 
-  const tenantName = lease.tenant.name;
-  const unitLabel = lease.unit.label;
+  return withRlsContext(actor, async (tx) => {
+    const lease = await tx.lease.findFirst({
+      where: { unitId: input.unitId, status: "ACTIVE" },
+      include: { tenant: true, unit: true },
+    });
+    if (!lease) return null;
 
-  await prisma.$transaction(async (tx) => {
+    const tenantName = lease.tenant.name;
+    const unitLabel = lease.unit.label;
+
     await tx.tenantOffboarding.create({
       data: {
         leaseId: lease.id,
@@ -150,14 +172,16 @@ export async function confirmOffboardAction(input: {
       where: { id: lease.tenantId },
       data: { name: "—", phone: "—", status: "OFFBOARDED" },
     });
-  });
 
-  return { tenantName, unitLabel };
+    return { tenantName, unitLabel };
+  });
 }
 
 // ---- Caretaker writes ----
 
 export async function submitTicketAction(input: RepairFormState): Promise<void> {
+  await verifySession();
+
   const unit = await prisma.unit.findUnique({ where: { label: input.unit.trim().toUpperCase() } });
   if (!unit) return;
 
@@ -195,16 +219,26 @@ export async function submitTicketAction(input: RepairFormState): Promise<void> 
 }
 
 export async function submitInspectionAction(input: InspectFormState): Promise<Inspection | null> {
+  const session = await verifySession();
+  const actor = actorFromSession(session);
+
   const label = input.unit.trim().toUpperCase();
-  const unit = await prisma.unit.findUnique({
-    where: { label },
-    include: { property: true, leases: { where: { status: "ACTIVE" }, include: { tenant: true } } },
-  });
+  const unit = await prisma.unit.findUnique({ where: { label }, include: { property: true } });
   if (!unit) return null;
+
+  // Tenant/Lease are RLS-protected — a caretaker outside this unit's
+  // property assignment gets no row back and the inspection is logged
+  // against "Vacant", rather than leaking who lives there.
+  const lease = await withRlsContext(actor, (tx) =>
+    tx.lease.findFirst({
+      where: { unitId: unit.id, status: "ACTIVE" },
+      select: { tenant: { select: { name: true } } },
+    })
+  );
+  const tenantLabel = lease?.tenant.name ?? "Vacant";
 
   const count = await prisma.inspection.count();
   const ref = "IN-" + (90 + count);
-  const tenantLabel = unit.leases[0]?.tenant.name ?? "Vacant";
 
   const row = await prisma.inspection.create({
     data: {
@@ -215,6 +249,7 @@ export async function submitInspectionAction(input: InspectFormState): Promise<I
       inspectedOn: TODAY,
       photoCount: input.photos,
       tenantLabelAtTime: tenantLabel,
+      caretakerId: session.user.staffId,
       seedOrder: null,
     },
   });
@@ -227,12 +262,14 @@ export async function submitInspectionAction(input: InspectFormState): Promise<I
     date: formatDayMonthYear(TODAY),
     tenant: tenantLabel,
     condition: input.condition,
-    caretaker: "P. Nel",
+    caretaker: session.user.name,
     photos: input.photos,
   };
 }
 
 export async function advanceTicketStatusAction(input: { ticketRef: string; status: TicketStatus }): Promise<void> {
+  await verifySession();
+
   await prisma.maintenanceTicket.update({
     where: { ref: input.ticketRef },
     data: { status: TICKET_STATUS_VALUE[input.status] },

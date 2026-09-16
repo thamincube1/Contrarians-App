@@ -79,9 +79,9 @@ interface AppState {
   form: RepairFormState;
 }
 
-function buildInitialState(initial: InitialData): AppState {
+function buildInitialState(initial: InitialData, role: Role): AppState {
   return {
-    role: "landlord",
+    role,
     screen: "dashboard",
     tenantId: null,
     query: "",
@@ -114,7 +114,6 @@ interface AppContextValue {
   leviesBase: Levy[];
   R: (n: number) => string;
   flash: (m: string) => void;
-  setRole: (r: Role) => void;
   goScreen: (s: LandlordScreen) => void;
   setQuery: (q: string) => void;
   setFilter: (f: string) => void;
@@ -156,12 +155,20 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-export function AppProvider({ children, initial }: { children: ReactNode; initial: InitialData }) {
+export function AppProvider({
+  children,
+  initial,
+  role,
+}: {
+  children: ReactNode;
+  initial: InitialData;
+  role: Role;
+}) {
   fillOnce(PROPS, initial.properties);
   fillOnce(STAFF, initial.staff);
   fillOnce(ELEC_PURCHASES_BASE, initial.electricityBase);
 
-  const [state, setState] = useState<AppState>(() => buildInitialState(initial));
+  const [state, setState] = useState<AppState>(() => buildInitialState(initial, role));
   const [units, setUnits] = useState<Unit[]>(initial.units);
   const [tickets, setTickets] = useState<Ticket[]>(initial.tickets);
   // Fixed fixtures — no write action in this app edits or removes them.
@@ -193,7 +200,6 @@ export function AppProvider({ children, initial }: { children: ReactNode; initia
       leviesBase,
       R,
       flash,
-      setRole: (r) => patch({ role: r }),
       goScreen: (screenId) => patch({ screen: screenId }),
       setQuery: (q) => patch({ query: q }),
       setFilter: (f) => patch({ filter: f }),

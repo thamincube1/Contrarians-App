@@ -296,6 +296,22 @@ model StaffMember {
   propertyAssignments StaffPropertyAssignment[]
   ticketsAssigned     MaintenanceTicket[]
   inspections         Inspection[]
+  user                User?
+}
+
+// The login for a StaffMember — role here is the source of truth for
+// session/route authorization (see lib/auth.ts), and staffId is what RLS
+// policies key off of to scope a caretaker to their assigned properties
+// (see StaffPropertyAssignment and the raw-SQL RLS migration).
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         StaffRole
+  staffId      String    @unique
+  staff        StaffMember @relation(fields: [staffId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 // caretaker_assignments — per-property scoping. RLS in a real deployment

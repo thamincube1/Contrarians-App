@@ -1,15 +1,11 @@
 "use client";
 
 import { useApp } from "@/lib/store";
-import type { Role } from "@/lib/types";
+import { logoutAction } from "@/lib/auth-actions";
+import Tag from "@/components/ui/Tag";
 
-const ROLES: { id: Role; label: string }[] = [
-  { id: "landlord", label: "Landlord" },
-  { id: "caretaker", label: "Caretaker" },
-];
-
-export default function Header() {
-  const { state, setRole } = useApp();
+export default function Header({ userName }: { userName: string }) {
+  const { state } = useApp();
 
   return (
     <div
@@ -26,34 +22,22 @@ export default function Header() {
           Internal ops
         </div>
       </div>
-      <div className="flex items-center gap-2.5 px-5">
+      <div className="flex items-center gap-2.5 px-5 flex-1">
         <span className="text-[11px] tracking-[0.08em] uppercase" style={{ color: "#605d5d" }}>
           Signed in as
         </span>
-        <div className="segmented">
-          {ROLES.map((r) => {
-            const active = state.role === r.id;
-            return (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => setRole(r.id)}
-                className="btn seg-btn text-[13px] px-3.5 py-1.5"
-                style={{
-                  background: active ? "#201e1d" : "transparent",
-                  color: active ? "#f3f2f2" : "#201e1d",
-                }}
-              >
-                {r.label}
-              </button>
-            );
-          })}
-        </div>
+        <span className="text-[13px] font-extrabold tracking-tight">{userName}</span>
+        <Tag label={state.role === "landlord" ? "Landlord" : "Caretaker"} bg="#201e1d" fg="#f3f2f2" />
         <span className="text-xs" style={{ color: "#605d5d" }}>
           {state.role === "landlord"
             ? "Full access — money, portfolio, deletion"
             : "Restricted — repairs and unit lists only"}
         </span>
+        <form action={logoutAction} className="ml-auto">
+          <button type="submit" className="btn text-[13px] px-3 py-1.5" style={{ color: "#ae1800" }}>
+            Sign out
+          </button>
+        </form>
       </div>
     </div>
   );
