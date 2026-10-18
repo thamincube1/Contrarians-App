@@ -17,7 +17,10 @@ export default function LandlordShell() {
   const { state } = useApp();
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: "224px minmax(0,1fr)", minHeight: "calc(100vh - 51px)" }}>
+    <div
+      className="grid landlord-shell-grid"
+      style={{ minHeight: "calc(100dvh - 51px)" }}
+    >
       <Sidebar />
       <main className="min-w-0">
         <ScreenHeader />

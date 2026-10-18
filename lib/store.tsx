@@ -87,6 +87,10 @@ interface AppState {
   offline: boolean;
   toast: string;
   form: RepairFormState;
+  // Purely presentational — whether the mobile nav sheet (Sidebar.tsx's
+  // small-screen replacement for the desktop sidebar) is open. Lives
+  // alongside the other UI-only booleans below (payOpen, offboardOpen).
+  mobileNavOpen: boolean;
 }
 
 function buildInitialState(initial: InitialData, role: Role): AppState {
@@ -113,6 +117,7 @@ function buildInitialState(initial: InitialData, role: Role): AppState {
     offline: false,
     toast: "",
     form: { unit: "", cat: "Plumbing", desc: "", urgency: "Routine", via: "WhatsApp", photos: 1 },
+    mobileNavOpen: false,
   };
 }
 
@@ -129,6 +134,8 @@ interface AppContextValue {
   setQuery: (q: string) => void;
   setFilter: (f: string) => void;
   openTenant: (unitId: string) => void;
+  toggleMobileNav: () => void;
+  closeMobileNav: () => void;
 
   setElecField: (patch: Partial<ElecFormState>) => void;
   saveElec: () => void;
@@ -247,10 +254,12 @@ export function AppProvider({
       outbox,
       R,
       flash,
-      goScreen: (screenId) => patch({ screen: screenId }),
+      goScreen: (screenId) => patch({ screen: screenId, mobileNavOpen: false }),
       setQuery: (q) => patch({ query: q }),
       setFilter: (f) => patch({ filter: f }),
       openTenant: (unitId) => patch({ screen: "tenant", tenantId: unitId }),
+      toggleMobileNav: () => patch((s) => ({ mobileNavOpen: !s.mobileNavOpen })),
+      closeMobileNav: () => patch({ mobileNavOpen: false }),
 
       setElecField: (p) => patch((s) => ({ elec: { ...s.elec, ...p } })),
       saveElec: () => {

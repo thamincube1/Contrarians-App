@@ -75,16 +75,16 @@ export default function Units() {
                   className="cursor-pointer"
                   onClick={() => (vac ? undefined : openTenant(u.id))}
                 >
-                  <td className="tabnum pl-[22px] font-extrabold">{u.label}</td>
-                  <td style={{ color: "#605d5d" }}>{u.property}</td>
-                  <td className="font-semibold" style={{ color: vac ? "#9b9797" : "#201e1d" }}>
+                  <td className="tabnum pl-[22px] font-extrabold" data-label="Unit">{u.label}</td>
+                  <td style={{ color: "#605d5d" }} data-label="Property">{u.property}</td>
+                  <td className="font-semibold" style={{ color: vac ? "#9b9797" : "#201e1d" }} data-label="Tenant">
                     {vac ? "— vacant —" : u.tenant}
                   </td>
-                  <td className="tabnum text-right">{R(u.rent)}</td>
-                  <td className="tabnum text-right font-extrabold" style={{ color: b > 0 ? "#ae1800" : "#9b9797" }}>
+                  <td className="tabnum text-right" data-label="Rent">{R(u.rent)}</td>
+                  <td className="tabnum text-right font-extrabold" style={{ color: b > 0 ? "#ae1800" : "#9b9797" }} data-label="Balance">
                     {vac ? "—" : b > 0 ? R(b) : "—"}
                   </td>
-                  <td className="pr-[22px]">
+                  <td className="pr-[22px]" data-label="Status">
                     <Tag label={status} bg={tagBg} fg={tagFg} />
                   </td>
                 </tr>

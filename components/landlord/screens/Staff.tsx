@@ -20,17 +20,17 @@ export default function Staff() {
           <tbody>
             {STAFF.map((s) => (
               <tr key={s.name}>
-                <td className="pl-[22px] font-extrabold">{s.name}</td>
-                <td>
+                <td className="pl-[22px] font-extrabold" data-label="Name">{s.name}</td>
+                <td data-label="Role">
                   <Tag
                     label={s.role}
                     bg={s.role === "Landlord" ? "#ec3013" : "#d7d3d3"}
                     fg={s.role === "Landlord" ? "#f3f2f2" : "#444141"}
                   />
                 </td>
-                <td style={{ color: "#444141" }}>{s.props}</td>
-                <td style={{ color: "#444141" }}>{s.canClose}</td>
-                <td className="tabnum pr-[22px]" style={{ color: "#605d5d" }}>{s.active}</td>
+                <td style={{ color: "#444141" }} data-label="Assigned properties">{s.props}</td>
+                <td style={{ color: "#444141" }} data-label="Can close tickets">{s.canClose}</td>
+                <td className="tabnum pr-[22px]" style={{ color: "#605d5d" }} data-label="Last active">{s.active}</td>
               </tr>
             ))}
           </tbody>

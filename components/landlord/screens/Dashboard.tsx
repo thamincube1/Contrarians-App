@@ -41,7 +41,7 @@ export default function Dashboard() {
   return (
     <div>
       <StatRow stats={metrics} />
-      <div className="grid gap-3 px-4 pb-4" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)" }}>
+      <div className="grid responsive-grid gap-3 px-4 pb-4" style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)" }}>
         <section className="surface">
           <div className="py-[18px] px-[22px] pb-2 flex items-baseline justify-between">
             <h2 className="text-xs font-extrabold tracking-[0.08em] uppercase">Occupancy by property</h2>

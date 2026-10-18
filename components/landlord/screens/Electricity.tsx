@@ -44,7 +44,7 @@ export default function Electricity() {
   return (
     <div>
       <StatRow stats={stats} />
-      <div className="grid gap-3 px-4 pb-4" style={{ gridTemplateColumns: "minmax(0,1fr) 340px" }}>
+      <div className="grid responsive-grid gap-3 px-4 pb-4" style={{ gridTemplateColumns: "minmax(0,1fr) 340px" }}>
         <section className="surface">
           <div className="py-4 px-[22px] pb-2">
             <h2 className="text-xs font-extrabold tracking-[0.08em] uppercase">Purchase ledger</h2>
@@ -64,13 +64,13 @@ export default function Electricity() {
             <tbody>
               {purchases.map((p, i) => (
                 <tr key={i} style={{ background: p.rowBg }}>
-                  <td className="tabnum pl-[22px]" style={{ color: "#605d5d" }}>{p.date}</td>
-                  <td className="tabnum font-extrabold">{p.unit}</td>
-                  <td className="text-xs" style={{ fontFamily: "ui-monospace,Menlo,monospace", color: "#605d5d" }}>{p.token}</td>
-                  <td className="tabnum text-right font-semibold">{p.amount}</td>
-                  <td className="tabnum text-right">{p.kwh}</td>
-                  <td className="tabnum text-right" style={{ color: p.rateTone, fontWeight: p.rateWeight }}>{p.rate}</td>
-                  <td className="pr-[22px] text-xs" style={{ color: "#444141" }}>{p.recharge}</td>
+                  <td className="tabnum pl-[22px]" style={{ color: "#605d5d" }} data-label="Date">{p.date}</td>
+                  <td className="tabnum font-extrabold" data-label="Unit">{p.unit}</td>
+                  <td className="text-xs" style={{ fontFamily: "ui-monospace,Menlo,monospace", color: "#605d5d" }} data-label="Token">{p.token}</td>
+                  <td className="tabnum text-right font-semibold" data-label="Amount">{p.amount}</td>
+                  <td className="tabnum text-right" data-label="kWh">{p.kwh}</td>
+                  <td className="tabnum text-right" style={{ color: p.rateTone, fontWeight: p.rateWeight }} data-label="c/kWh">{p.rate}</td>
+                  <td className="pr-[22px] text-xs" style={{ color: "#444141" }} data-label="Recharge">{p.recharge}</td>
                 </tr>
               ))}
             </tbody>

@@ -17,7 +17,7 @@ export default function Levies() {
   return (
     <div>
       <StatRow stats={stats} />
-      <div className="grid gap-3 px-4 pb-4" style={{ gridTemplateColumns: "minmax(0,1fr) 340px" }}>
+      <div className="grid responsive-grid gap-3 px-4 pb-4" style={{ gridTemplateColumns: "minmax(0,1fr) 340px" }}>
         <section className="surface">
           <div className="py-4 px-[22px] pb-2">
             <h2 className="text-xs font-extrabold tracking-[0.08em] uppercase">Levy ledger</h2>
@@ -34,10 +34,10 @@ export default function Levies() {
             <tbody>
               {allLevies.map((l, i) => (
                 <tr key={i}>
-                  <td className="tabnum pl-[22px]" style={{ color: "#605d5d" }}>{l.month}</td>
-                  <td className="font-extrabold">{l.property}</td>
-                  <td className="tabnum text-right font-semibold">{R(l.amount)}</td>
-                  <td className="pr-[22px] text-xs" style={{ color: "#444141" }}>{l.note}</td>
+                  <td className="tabnum pl-[22px]" style={{ color: "#605d5d" }} data-label="Month">{l.month}</td>
+                  <td className="font-extrabold" data-label="Property">{l.property}</td>
+                  <td className="tabnum text-right font-semibold" data-label="Amount">{R(l.amount)}</td>
+                  <td className="pr-[22px] text-xs" style={{ color: "#444141" }} data-label="Note">{l.note}</td>
                 </tr>
               ))}
             </tbody>

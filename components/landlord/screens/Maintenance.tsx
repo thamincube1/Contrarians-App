@@ -14,9 +14,9 @@ export default function Maintenance() {
   const { board } = useDerived();
 
   return (
-    <div className="grid gap-3 p-4" style={{ gridTemplateColumns: "repeat(4,minmax(0,1fr))", minHeight: 400 }}>
+    <div className="kanban-board p-4">
       {board.map((col) => (
-        <div key={col.label}>
+        <div key={col.label} className="min-w-0">
           <div className="py-3.5 px-1 pb-2.5 flex justify-between items-baseline">
             <span className="text-xs font-extrabold tracking-[0.08em] uppercase">{col.label}</span>
             <span className="tabnum text-xs font-extrabold" style={{ color: "#605d5d" }}>{col.count}</span>

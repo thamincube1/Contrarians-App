@@ -8,8 +8,9 @@ export default function Toast() {
   return (
     <div
       key={state.toast}
-      className="fixed left-[22px] bottom-[22px] px-4 py-3 text-sm font-semibold z-[70] rounded-[16px]"
+      className="fixed left-[22px] px-4 py-3 text-sm font-semibold z-[70] rounded-[16px] max-w-[calc(100vw-44px)]"
       style={{
+        bottom: "calc(22px + env(safe-area-inset-bottom, 0px))",
         background: "rgba(32,30,29,0.92)",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",

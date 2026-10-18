@@ -58,15 +58,15 @@ export default function Vacancy() {
           <tbody>
             {rows.map((r) => (
               <tr key={r.unit.id}>
-                <td className="tabnum pl-[22px] font-extrabold">{r.label}</td>
-                <td style={{ color: "#605d5d" }}>{r.property}</td>
-                <td>
+                <td className="tabnum pl-[22px] font-extrabold" data-label="Unit">{r.label}</td>
+                <td style={{ color: "#605d5d" }} data-label="Property">{r.property}</td>
+                <td data-label="Status">
                   <Tag label={r.status} bg={r.tagBg} fg={r.tagFg} />
                 </td>
-                <td className="tabnum text-right" style={{ color: "#605d5d" }}>{r.since}</td>
-                <td className="tabnum text-right font-extrabold">{r.days}</td>
-                <td className="tabnum text-right font-extrabold" style={{ color: "#ae1800" }}>{r.lost}</td>
-                <td className="pr-[22px]" style={{ color: "#444141" }}>{r.ready}</td>
+                <td className="tabnum text-right" style={{ color: "#605d5d" }} data-label="Vacant since">{r.since}</td>
+                <td className="tabnum text-right font-extrabold" data-label="Days">{r.days}</td>
+                <td className="tabnum text-right font-extrabold" style={{ color: "#ae1800" }} data-label="Rent lost">{r.lost}</td>
+                <td className="pr-[22px]" style={{ color: "#444141" }} data-label="Ready to let">{r.ready}</td>
               </tr>
             ))}
           </tbody>

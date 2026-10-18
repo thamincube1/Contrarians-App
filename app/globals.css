@@ -207,7 +207,12 @@ h4 {
   font-weight: 600;
 }
 .input {
-  font-size: 14px;
+  /* 16px, not 14px: iOS Safari auto-zooms the page on focus for any input
+     with a computed font-size under 16px. This class is unlayered plain
+     CSS (loaded after Tailwind's @layer utilities), so it wins the
+     cascade over any text-size utility class placed alongside it — see
+     the responsive-layout notes near the bottom of this file. */
+  font-size: 16px;
   padding: 9px 12px;
   border: 1px solid var(--hairline);
   background: var(--color-bg);
@@ -355,5 +360,192 @@ h4 {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================
+   Responsive layout — phone/tablet breakpoints
+   ============================================================
+   Everything below is unlayered plain CSS, loaded after Tailwind's
+   `@layer base/components/utilities` (from the `@import` at the top of
+   this file). Per the CSS cascade-layers spec, unlayered rules always
+   beat layered ones regardless of specificity or source order — so these
+   rules override any Tailwind utility class (arbitrary-value text sizes,
+   fixed widths, `items-center`, etc.) written directly on an element,
+   without needing `!important` anywhere in this section. */
+
+/* Bars anchored to a physical screen edge (the header, a bottom sheet,
+   a full-screen modal) pad for the notch / home indicator on top of
+   their normal padding — see next.config.ts's viewport-fit: "cover". */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Stat tiles (Dashboard/Vacancy/Electricity/Levies/Inspections): N equal
+   columns on desktop (N set per-instance via the --stat-cols custom
+   property in StatRow.tsx), 2 columns below 640px. */
+.stat-row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(var(--stat-cols, 4), minmax(0, 1fr));
+}
+
+/* Two-pane screens (a list/table plus a fixed-width side panel, or a
+   summary header plus a fixed-width balance panel) collapse to one
+   column below 640px — used by Dashboard, Electricity, Levies and
+   TenantRecord's header card. */
+@media (max-width: 640px) {
+  .stat-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Segmented controls (filter pills, Type/Condition/Urgency selectors)
+     can be wider than their content needs on a phone (e.g. Units.tsx's
+     4-option unit filter) — scroll within the control itself rather than
+     letting it force the whole page wider. */
+  .segmented {
+    max-width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .responsive-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  /* TenantRecord's header card splits into two divs with a border between
+     them for the two-column desktop layout — pointless (and visually odd)
+     once they're stacked full-width, so drop it. */
+  .responsive-grid > *:first-child {
+    border-right: none !important;
+    border-bottom: 1px solid var(--hairline-soft);
+  }
+}
+
+/* Tables become stacked "label: value" cards below 640px. Every <td> in
+   every table in this app carries a data-label attribute (see Units.tsx,
+   Vacancy.tsx, Inspections.tsx, Levies.tsx, Electricity.tsx, Staff.tsx)
+   for the ::before pseudo-element below to read. */
+@media (max-width: 640px) {
+  .table thead {
+    display: none;
+  }
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+  .table tr {
+    padding: 10px 16px;
+  }
+  .table td {
+    padding: 4px 0;
+    border: none;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: left;
+    min-width: 0;
+  }
+  .table td > * {
+    min-width: 0;
+  }
+  .table td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-neutral-700);
+  }
+}
+
+/* Maintenance kanban: 4 fixed columns on desktop, one column per screen
+   width with horizontal snap-scrolling below 640px. */
+.kanban-board {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  min-height: 400px;
+}
+@media (max-width: 640px) {
+  .kanban-board {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+  }
+  .kanban-board > * {
+    flex: 0 0 100%;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+}
+
+/* Modals become full-height bottom sheets below 640px. */
+@media (max-width: 640px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .modal-panel {
+    width: 100%;
+    max-width: 100%;
+    max-height: min(90dvh, 100dvh - env(safe-area-inset-top, 0px) - 16px);
+    border-radius: 22px 22px 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Caretaker shell: the rounded "phone within a browser" mock frame only
+   makes sense as a desktop preview — on a real phone it just wastes
+   space, so it goes full-bleed below 640px, and the desktop-only design
+   notes panel (not something a working caretaker needs) is hidden. */
+@media (max-width: 640px) {
+  .caretaker-shell {
+    display: block;
+    padding: 0;
+    gap: 0;
+  }
+  .caretaker-phone-mock {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    min-height: auto;
+    overflow: visible;
+  }
+  .caretaker-design-notes {
+    display: none;
+  }
+}
+
+/* Sidebar → menu sheet below 640px (see Sidebar.tsx for the markup this
+   toggles: a hamburger button lives in Header.tsx, driven by
+   state.mobileNavOpen). */
+.landlord-shell-grid {
+  grid-template-columns: 224px minmax(0, 1fr);
+}
+@media (max-width: 640px) {
+  .landlord-shell-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sidebar-desktop {
+    display: none;
+  }
+  .mobile-nav-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+  }
+}
+@media (min-width: 641px) {
+  .mobile-nav-sheet {
+    display: none;
   }
 }

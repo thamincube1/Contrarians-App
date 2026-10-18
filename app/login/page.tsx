@@ -11,7 +11,7 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-dvh flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-[380px]">
         <div className="flex items-center gap-2.5 mb-8 justify-center">
           <div className="w-3.5 h-3.5 rounded-[4px]" style={{ background: "#ec3013" }} />

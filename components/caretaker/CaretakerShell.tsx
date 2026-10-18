@@ -11,9 +11,12 @@ export default function CaretakerShell() {
   const { state } = useApp();
 
   return (
-    <div className="grid gap-4 p-4" style={{ gridTemplateColumns: "minmax(0,390px) minmax(0,1fr)", minHeight: "calc(100vh - 67px)" }}>
+    <div
+      className="grid caretaker-shell gap-4 p-4"
+      style={{ gridTemplateColumns: "minmax(0,390px) minmax(0,1fr)", minHeight: "calc(100dvh - 67px)" }}
+    >
       <div
-        className="flex flex-col rounded-[28px] overflow-hidden"
+        className="caretaker-phone-mock flex flex-col rounded-[28px] overflow-hidden"
         style={{ background: "#eae9e9", boxShadow: "var(--shadow-md)", border: "1px solid var(--hairline-soft)" }}
       >
         <div
@@ -32,7 +35,9 @@ export default function CaretakerShell() {
           {state.ct === "detail" && <TicketDetail />}
         </div>
       </div>
-      <DesignNotes />
+      <div className="caretaker-design-notes">
+        <DesignNotes />
+      </div>
     </div>
   );
 }

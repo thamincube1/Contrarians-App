@@ -39,7 +39,7 @@ export default function TenantRecord() {
 
   return (
     <div className="p-4">
-      <div className="surface grid mb-3" style={{ gridTemplateColumns: "minmax(0,1fr) 290px" }}>
+      <div className="surface grid responsive-grid mb-3" style={{ gridTemplateColumns: "minmax(0,1fr) 290px" }}>
         <div className="py-5 px-[22px] pb-[22px]" style={{ borderRight: "1px solid var(--hairline-soft)" }}>
           <div className="flex gap-1.5 flex-wrap mb-2.5">
             {tags.map((tg, i) => (

@@ -34,25 +34,26 @@ export default function Inspections() {
           <tbody>
             {allInspections.map((i) => (
               <tr key={i.id}>
-                <td className="tabnum pl-[22px] font-extrabold">{i.unit}</td>
-                <td style={{ color: "#605d5d" }}>{i.property}</td>
-                <td>
+                <td className="tabnum pl-[22px] font-extrabold" data-label="Unit">{i.unit}</td>
+                <td style={{ color: "#605d5d" }} data-label="Property">{i.property}</td>
+                <td data-label="Type">
                   <Tag
                     label={i.type}
                     bg={i.type === "Move-out" ? "#201e1d" : "#eae9e9"}
                     fg={i.type === "Move-out" ? "#f3f2f2" : "#444141"}
                   />
                 </td>
-                <td className="tabnum" style={{ color: "#605d5d" }}>{i.date}</td>
-                <td>{i.tenant}</td>
+                <td className="tabnum" style={{ color: "#605d5d" }} data-label="Date">{i.date}</td>
+                <td data-label="Tenant">{i.tenant}</td>
                 <td
                   className="font-semibold"
                   style={{ color: i.condition === "Damage noted" ? "#ae1800" : i.condition === "Pending" ? "#605d5d" : "#201e1d" }}
+                  data-label="Condition"
                 >
                   {i.condition}
                 </td>
-                <td style={{ color: "#605d5d" }}>{i.caretaker}</td>
-                <td className="tabnum text-right pr-[22px]">{i.photos}</td>
+                <td style={{ color: "#605d5d" }} data-label="Caretaker">{i.caretaker}</td>
+                <td className="tabnum text-right pr-[22px]" data-label="Photos">{i.photos}</td>
               </tr>
             ))}
           </tbody>

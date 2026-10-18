@@ -8,8 +8,8 @@ export interface Stat {
 export default function StatRow({ stats }: { stats: Stat[] }) {
   return (
     <div
-      className="grid gap-3 p-4"
-      style={{ gridTemplateColumns: `repeat(${stats.length}, minmax(0, 1fr))` }}
+      className="stat-row p-4"
+      style={{ ["--stat-cols" as string]: stats.length }}
     >
       {stats.map((s, i) => (
         <div key={i} className="card py-4 px-[18px]">
