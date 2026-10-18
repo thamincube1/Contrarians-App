@@ -190,6 +190,8 @@ async function deliverPdf(input: {
   html: string;
   filename: string;
   pdf: Buffer;
+  kind: string;
+  label: string;
 }): Promise<{ emailed: boolean; devMode?: boolean; reason?: string }> {
   if (!input.to) return { emailed: false, reason: "No email on file for this tenant" };
 
@@ -198,6 +200,8 @@ async function deliverPdf(input: {
     subject: input.subject,
     html: input.html,
     attachment: { filename: input.filename, content: input.pdf },
+    kind: input.kind,
+    label: input.label,
   });
   if (!result.ok) return { emailed: false, reason: result.error ?? "Failed to send email" };
   return { emailed: true, devMode: result.devMode };
@@ -219,6 +223,8 @@ export async function sendStatementAction(input: { unitId: string }): Promise<Em
     html: `<p>Hi ${statementData.tenantName},</p><p>Your latest statement is attached.</p>`,
     filename: `statement-${statementData.unitLabel}.pdf`,
     pdf,
+    kind: "statement",
+    label: statementData.unitLabel,
   });
 
   return { ok: true, ...delivery };
@@ -262,6 +268,8 @@ export async function sendInvoiceAction(input: { unitId: string }): Promise<Emai
     html: `<p>Hi ${invoiceData.tenantName},</p><p>Your invoice for ${invoiceData.billingMonth} is attached.</p>`,
     filename: `${invoiceData.invoiceNumber}.pdf`,
     pdf,
+    kind: "invoice",
+    label: invoiceData.unitLabel,
   });
 
   return { ok: true, ...delivery };
@@ -288,6 +296,8 @@ export async function sendDemandAction(input: { unitId: string }): Promise<Email
     html: `<p>Dear ${statementData.tenantName},</p><p>Please find attached a formal letter of demand regarding your account.</p>`,
     filename: `demand-${statementData.unitLabel}.pdf`,
     pdf,
+    kind: "demand",
+    label: statementData.unitLabel,
   });
 
   return { ok: true, ...delivery };
@@ -405,6 +415,8 @@ export async function confirmOffboardAction(input: {
     subject: `Offboarding archive — ${tenantName}, ${unitLabel}`,
     html: `<p>The offboarding archive for ${tenantName} (${unitLabel}) is attached for your records.</p>`,
     attachment: { filename, content: pdf },
+    kind: "archive",
+    label: unitLabel,
   });
   if (!emailResult.ok) {
     console.error(`Offboarding archive email failed for ${unitLabel}:`, emailResult.error);
