@@ -9,7 +9,7 @@ Commands are for **PowerShell** on Windows, run from the repo root. They set con
 ## 1. Create the Supabase project
 
 1. <https://supabase.com/dashboard> → **New project**.
-2. **Region**: choose the region closest to your users that Vercel also has, e.g. *West EU (London)* = Vercel `lhr1`, or *Central EU (Frankfurt)* = Vercel `fra1`. Write it down; Vercel must use the matching region (step 7).
+2. **Region**: **West EU (Paris)**, which is `eu-west-3`. The matching Vercel function region is **`cdg1` (Paris, France)**; set it in step 7. The app and database must be in the same city, because every page load makes several database round trips.
 3. **Database password**: generate one and save it in your password manager. This is the owner password (`<db-password>` below).
 4. Once it's created, note the **project ref**: the `abcdefghijklmnop` part of `https://abcdefghijklmnop.supabase.co`.
 
@@ -21,11 +21,13 @@ The app never uses Supabase's REST/GraphQL API. It talks to Postgres directly th
 
 ## 2. Connection strings
 
-Dashboard → **Connect** (top bar) → **Session pooler**. Copy that URI. It looks like:
+Dashboard → **Connect** (top bar) → **Session pooler**. Copy that URI. For a Paris project it looks like:
 
 ```
-postgresql://postgres.<project-ref>:[YOUR-PASSWORD]@aws-0-<region>.pooler.supabase.com:5432/postgres
+postgresql://postgres.<project-ref>:[YOUR-PASSWORD]@aws-0-eu-west-3.pooler.supabase.com:5432/postgres
 ```
+
+Use the host exactly as the dashboard shows it. Some projects get `aws-1-eu-west-3…` instead of `aws-0-…`.
 
 Use the **session pooler (port 5432)**, not the transaction pooler (6543) and not the direct connection. The direct host is IPv6-only, which Vercel can't reach. The transaction pooler works but needs extra Prisma flags.
 
@@ -36,11 +38,11 @@ You'll build two URLs from it. They use the same host and port but different use
 | `DATABASE_URL` | `postgres.<project-ref>` | the database password from step 1 | `prisma migrate deploy`, seeding, and runtime queries on non-tenant-sensitive tables |
 | `RUNTIME_DATABASE_URL` | `app_runtime.<project-ref>` | the password you choose in step 4 | every runtime query on Tenant / Lease / Payment / TenantOffboarding, where RLS is enforced |
 
-Append `?connection_limit=2` to **both** URLs. Each Vercel function instance opens two Prisma clients, and the session pooler has a small connection cap (15 on the smallest compute). Prisma's default pool size would exhaust it with just two warm instances.
+**Both URLs must end in `?connection_limit=2`.** Each Vercel function instance opens two Prisma clients, and the session pooler has a small connection cap (15 on the smallest compute). Prisma's default pool size would exhaust it with just two warm instances.
 
 ```
-DATABASE_URL="postgresql://postgres.<ref>:<db-password>@aws-0-<region>.pooler.supabase.com:5432/postgres?connection_limit=2"
-RUNTIME_DATABASE_URL="postgresql://app_runtime.<ref>:<app-runtime-password>@aws-0-<region>.pooler.supabase.com:5432/postgres?connection_limit=2"
+DATABASE_URL="postgresql://postgres.<ref>:<db-password>@aws-0-eu-west-3.pooler.supabase.com:5432/postgres?connection_limit=2"
+RUNTIME_DATABASE_URL="postgresql://app_runtime.<ref>:<app-runtime-password>@aws-0-eu-west-3.pooler.supabase.com:5432/postgres?connection_limit=2"
 ```
 
 If a password contains `@ : / ? #` or `%`, URL-encode it (`@` → `%40`, etc.).
@@ -50,7 +52,7 @@ If a password contains `@ : / ? #` or `%`, URL-encode it (`@` → `%40`, etc.).
 ## 3. Create the schema: `migrate deploy`
 
 ```powershell
-$env:DATABASE_URL = "postgresql://postgres.<ref>:<db-password>@aws-0-<region>.pooler.supabase.com:5432/postgres?connection_limit=2"
+$env:DATABASE_URL = "postgresql://postgres.<ref>:<db-password>@aws-0-eu-west-3.pooler.supabase.com:5432/postgres?connection_limit=2"
 npx prisma migrate deploy
 ```
 
@@ -77,8 +79,8 @@ Order matters: **migrate deploy → setup-roles.sql**. Re-run the role script af
 
 The seed is fictional: generated names, phone numbers and meters, and `@example.com` tenant emails. It creates two logins:
 
-- Landlord: `brandt@hauswerk.dev`
-- Caretaker: `nel@hauswerk.dev`
+- Landlord: `brandt@contrarians.dev`
+- Caretaker: `nel@contrarians.dev` (assigned to all three properties)
 
 Both use the password you pass as `SEED_PASSWORD`. The seed refuses to run against a non-local database without it, because the dev password is public.
 
@@ -102,9 +104,12 @@ This deletes every row (schema and migrations are kept) and reseeds. It refuses 
 
 Generated PDFs (offboarding archives, and the dev-mode email outbox) go to Supabase Storage. Vercel's filesystem doesn't persist.
 
-1. Dashboard → **Storage** → **New bucket** → name `documents` → **leave "Public bucket" OFF** (private).
-2. Dashboard → **Project Settings → API Keys** → copy the **secret** key (`sb_secret_…`), or the legacy `service_role` key. **This key bypasses all security. It goes only into Vercel's server env, never into any `NEXT_PUBLIC_` variable and never into git.**
-3. The **Project URL** is `https://<project-ref>.supabase.co`.
+1. Dashboard → **Storage** → **New bucket** → name it exactly **`documents`** → leave **"Public bucket" OFF** (private) → Create. No bucket policies are needed; the app uses the secret key, which bypasses them.
+2. Copy the server-side key: Dashboard → **Project Settings** (gear icon) → **API Keys** → **"Publishable and secret API keys"** tab → **Secret keys** section → the key named **`default`** → click the eye/copy icon. It starts with **`sb_secret_`**. That value goes in `SUPABASE_SERVICE_ROLE_KEY`.
+   - **Not** the publishable key (`sb_publishable_…`) or the legacy `anon` key. Those can't read a private bucket, and uploads will fail with 400/403.
+   - If your project only shows the **"Legacy API keys"** tab, use the **`service_role`** key there (a long `eyJ…` token, marked *secret*). The app accepts either format.
+   - **This key bypasses all security.** It goes only into Vercel's server env, never into any `NEXT_PUBLIC_` variable and never into git.
+3. The **Project URL** is `https://<project-ref>.supabase.co` (Project Settings → Data API, or the same API Keys page). It goes in `SUPABASE_URL`.
 
 Files are read back through short-lived signed URLs (`createSignedUrl` in `lib/storage.ts`); nothing in the bucket is publicly addressable.
 
@@ -124,11 +129,11 @@ Files are read back through short-lived signed URLs (`createSignedUrl` in `lib/s
    | `RESEND_API_KEY` | your Resend key, or **leave unset** so emails are logged and their PDFs go to `outbox/` in the bucket instead of being sent |
    | `RESEND_FROM_EMAIL` | `Contrarians Properties <onboarding@resend.dev>` until you verify a domain (see below) |
    | `SUPABASE_URL` | `https://<project-ref>.supabase.co` |
-   | `SUPABASE_SERVICE_ROLE_KEY` | step 6 secret key |
+   | `SUPABASE_SERVICE_ROLE_KEY` | step 6 secret key (`sb_secret_…`) |
    | `SUPABASE_STORAGE_BUCKET` | `documents` |
 
    Don't set `NODE_ENV`; Vercel sets it to `production`.
-3. **Settings → Functions → Function Region**: set it to the region matching Supabase (step 1). The default (`iad1`, US East) adds a transatlantic round trip to every query, and the landlord dashboard makes several.
+3. **Settings → Functions → Function Region**: choose **Paris, France (`cdg1`)** to match Supabase `eu-west-3`. The default (`iad1`, US East) would add a transatlantic round trip to every query.
 4. Deploy. When it's live, run the smoke tests below.
 
 ### Email (Resend)
@@ -154,6 +159,8 @@ Files are read back through short-lived signed URLs (`createSignedUrl` in `lib/s
 - [ ] `/landlord` and `/landlord/dev/outbox` in the address bar → redirected to `/caretaker`, never landlord data.
 - [ ] View page source of `/caretaker` and search for `leviesBase` and `electricityBase`. Both must be followed by `[]` (empty). **No levy or electricity purchase amounts are sent to a caretaker.**
 - [ ] Units in the caretaker views show **no balances, rent or lease dates** (zeroed or empty).
+- [ ] In the page source, `staff` and `properties` are each followed by `[]`. Caretakers get no staff list and no property list (which carries base rents).
+- [ ] **Property scoping.** The seeded caretaker `nel@contrarians.dev` is assigned to all three properties, so to see filtering, unassign one in the SQL editor: `update "StaffPropertyAssignment" set "unassignedAt" = now() where "staffId" = (select "staffId" from "User" where email = 'nel@contrarians.dev') and "propertyId" = (select id from "Property" where key = 'fh');`. Reload `/caretaker`: no `FH-` unit, ticket or inspection appears anywhere in the page source, and logging a repair or inspection against `FH-101` answers "Unit not found". Undo it with the same statement using `set "unassignedAt" = null`.
 - [ ] Sending a statement, invoice or demand as the caretaker is impossible: there's no UI for it, and the server actions return "Not authorized".
 
 ### RLS at the database level (Supabase SQL Editor)
@@ -195,6 +202,6 @@ rollback;
 
 ## Known limitations
 
-- **Caretaker scoping is partly app-level.** RLS scopes Tenant, Lease, Payment and TenantOffboarding (plus Unit, Property and Inspection for the restricted role). But the caretaker page still loads units, tickets, inspections and the staff list for **all** properties through the owner connection, so they aren't filtered by assignment. Levy and electricity data is withheld from caretakers.
+- **Caretaker scoping is enforced in two layers.** RLS covers Tenant, Lease, Payment and TenantOffboarding (and Unit, Property, Inspection for the restricted role). Units, tickets and inspections are read through the owner connection, so they're filtered by an explicit assignment check in the app instead (`unitScope` in `lib/data.ts`). That check also guards the caretaker's repair/inspection submissions and ticket status changes. Any new caretaker-facing query on those tables must use `unitScope` too.
 - **Photos are not uploaded.** Repair and inspection forms record a photo *count* with placeholder tiles; no image is captured or stored yet. `lib/storage.ts` (`putObject`/`createSignedUrl`) is where real uploads would go.
 - **The dev outbox page is local-only.** With no Resend key in production, PDFs still land in `outbox/` in the bucket, but there's no in-app page to browse them. Use the Storage dashboard.

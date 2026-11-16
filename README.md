@@ -67,12 +67,16 @@ Landlord/Caretaker boundary at the database layer.
    ```
 
 Open [http://localhost:3000](http://localhost:3000) — you'll land on `/login`.
-The seed creates two dev logins (password `hauswerk-dev` for both):
+The seed creates two dev logins (password `contrarians-dev` for both on a
+local database; anywhere else it's whatever `SEED_PASSWORD` was set to):
 
 | Email | Role |
 | --- | --- |
-| `brandt@hauswerk.dev` | Landlord — full access |
-| `nel@hauswerk.dev` | Caretaker — repairs/inspections/unit lookup only |
+| `brandt@contrarians.dev` | Landlord — full access |
+| `nel@contrarians.dev` | Caretaker — repairs/inspections/unit lookup, assigned properties only |
+
+A local database seeded before the app was renamed still has the old
+`@hauswerk.dev` logins with password `hauswerk-dev`, until it's reseeded.
 
 Signing in redirects to `/landlord` or `/caretaker` based on the session's
 role; each route's `layout.tsx` (and `page.tsx`) redirects away anyone whose

@@ -16,7 +16,7 @@ const prisma = new PrismaClient();
 // Dev-only fixed credentials — see README for the login screen. This
 // password is public (it's in the repo), so it's only allowed against a
 // local database; anywhere else SEED_PASSWORD must be set.
-const DEV_PASSWORD = "hauswerk-dev";
+const DEV_PASSWORD = "contrarians-dev";
 
 function isLocalDatabase(): boolean {
   try {
@@ -206,10 +206,10 @@ async function main() {
   // ---- Dev logins ----
   const passwordHash = await bcrypt.hash(password, 10);
   await prisma.user.create({
-    data: { email: "brandt@hauswerk.dev", passwordHash, role: "LANDLORD", staffId: brandt.id },
+    data: { email: "brandt@contrarians.dev", passwordHash, role: "LANDLORD", staffId: brandt.id },
   });
   await prisma.user.create({
-    data: { email: "nel@hauswerk.dev", passwordHash, role: "CARETAKER", staffId: nel.id },
+    data: { email: "nel@contrarians.dev", passwordHash, role: "CARETAKER", staffId: nel.id },
   });
 
   // ---- Maintenance tickets ----
