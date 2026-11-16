@@ -1,4 +1,5 @@
 import "server-only";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 import { withRlsContext, type RlsActor } from "./prisma-rls";
 import { formatDateSlash, formatDayMonthYear, formatMonthSlashYear, formatMonthYear } from "./format";
@@ -61,6 +62,18 @@ export const INSPECTION_CONDITION_VALUE: Record<InspectionCondition, "GOOD" | "F
 
 // ---- reads ----
 
+/**
+ * The Unit rows an actor may see: all of them for a landlord; for a
+ * caretaker, only units on a property with a live (unassignedAt IS NULL)
+ * StaffPropertyAssignment for their staffId — the same rule the RLS
+ * policies apply. Needed explicitly because Unit, MaintenanceTicket and
+ * Inspection are read through the owner connection, which bypasses RLS.
+ */
+export function unitScope(actor: RlsActor): Prisma.UnitWhereInput {
+  if (actor.role === "LANDLORD") return {};
+  return { property: { staffAssignments: { some: { staffId: actor.staffId, unassignedAt: null } } } };
+}
+
 export async function getProperties(): Promise<PropertyDef[]> {
   const rows = await prisma.property.findMany({
     include: { _count: { select: { units: true } } },
@@ -87,6 +100,7 @@ export async function getProperties(): Promise<PropertyDef[]> {
  */
 export async function getUnits(actor: RlsActor): Promise<Unit[]> {
   const units = await prisma.unit.findMany({
+    where: unitScope(actor),
     include: { property: true },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
   });
@@ -131,8 +145,9 @@ export async function getUnits(actor: RlsActor): Promise<Unit[]> {
   });
 }
 
-export async function getTickets(): Promise<Ticket[]> {
+export async function getTickets(actor: RlsActor): Promise<Ticket[]> {
   const rows = await prisma.maintenanceTicket.findMany({
+    where: { unit: unitScope(actor) },
     include: {
       unit: true,
       photos: { orderBy: { createdAt: "asc" } },
@@ -160,8 +175,9 @@ export async function getTickets(): Promise<Ticket[]> {
  * screen shows fixtures first, with fresh entries appended after, exactly
  * like the original mock's `[...INSPECTIONS_BASE, ...inspectExtra]`.
  */
-export async function getInspections(): Promise<{ base: Inspection[]; extra: Inspection[] }> {
+export async function getInspections(actor: RlsActor): Promise<{ base: Inspection[]; extra: Inspection[] }> {
   const rows = await prisma.inspection.findMany({
+    where: { unit: unitScope(actor) },
     include: { unit: { include: { property: true } }, caretaker: true },
   });
   const map = (i: (typeof rows)[number]): Inspection => ({
@@ -297,20 +313,22 @@ export interface InitialData {
 }
 
 export async function getInitialData(actor: RlsActor): Promise<InitialData> {
-  // Levy and ElectricityPurchase are read through the owner connection (no
-  // RLS applies), and everything returned here is serialised into the page
-  // payload — so caretakers must never be handed them, not merely have them
-  // hidden by the UI. Only landlord screens render either list.
+  // Everything returned here is serialised into the page payload, and most
+  // of it is read through the owner connection (no RLS) — so a caretaker
+  // must never be handed data the UI merely doesn't render. Units, tickets
+  // and inspections are scoped to their assigned properties (unitScope);
+  // levies, electricity, the staff list and the property list (which
+  // carries base rents) are landlord-screen-only and come back empty.
   const isLandlord = actor.role === "LANDLORD";
   const empty = { base: [], extra: [] };
   const [units, tickets, inspections, levies, electricity, staff, properties] = await Promise.all([
     getUnits(actor),
-    getTickets(),
-    getInspections(),
+    getTickets(actor),
+    getInspections(actor),
     isLandlord ? getLevies() : empty,
     isLandlord ? getElectricityPurchases() : empty,
-    getStaff(),
-    getProperties(),
+    isLandlord ? getStaff() : [],
+    isLandlord ? getProperties() : [],
   ]);
   return {
     units,

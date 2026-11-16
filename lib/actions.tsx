@@ -10,6 +10,7 @@ import {
   INSPECTION_CONDITION_VALUE,
   INSPECTION_TYPE_VALUE,
   TICKET_STATUS_VALUE,
+  unitScope,
 } from "./data";
 import { renderPdfToBuffer } from "./pdf/render";
 import { StatementDocument, type StatementData } from "./pdf/StatementDocument";
@@ -440,12 +441,17 @@ export async function confirmOffboardAction(input: {
 export async function submitTicketAction(
   input: RepairFormState & { clientId: string }
 ): Promise<SubmitResult> {
-  await verifySession();
+  const session = await verifySession();
+  const actor = actorFromSession(session);
 
   const existing = await prisma.maintenanceTicket.findUnique({ where: { clientId: input.clientId } });
   if (existing) return { ok: true };
 
-  const unit = await prisma.unit.findUnique({ where: { label: input.unit.trim().toUpperCase() } });
+  // A caretaker can only log against units on their assigned properties;
+  // anything else answers exactly like a unit that doesn't exist.
+  const unit = await prisma.unit.findFirst({
+    where: { label: input.unit.trim().toUpperCase(), ...unitScope(actor) },
+  });
   if (!unit) return { ok: false, reason: "Unit not found — check the unit number" };
 
   const priorityMap: Record<RepairFormState["urgency"], "ROUTINE" | "URGENT" | "EMERGENCY"> = {
@@ -500,8 +506,10 @@ export async function submitInspectionAction(
   const session = await verifySession();
   const actor = actorFromSession(session);
 
+  // Scoped like submitTicketAction: an unassigned unit looks nonexistent,
+  // so its property name never comes back in the response.
   const label = input.unit.trim().toUpperCase();
-  const unit = await prisma.unit.findUnique({ where: { label }, include: { property: true } });
+  const unit = await prisma.unit.findFirst({ where: { label, ...unitScope(actor) }, include: { property: true } });
   if (!unit) return { ok: false, reason: "Unit not found — check the unit number" };
 
   const toShape = (r: { ref: string; tenantLabelAtTime: string; photoCount: number }): Inspection => ({
@@ -557,10 +565,12 @@ export async function submitInspectionAction(
 }
 
 export async function advanceTicketStatusAction(input: { ticketRef: string; status: TicketStatus }): Promise<void> {
-  await verifySession();
+  const session = await verifySession();
 
-  await prisma.maintenanceTicket.update({
-    where: { ref: input.ticketRef },
+  // updateMany so the scope can sit in the where clause: a caretaker
+  // advancing a ticket outside their properties updates nothing.
+  await prisma.maintenanceTicket.updateMany({
+    where: { ref: input.ticketRef, unit: unitScope(actorFromSession(session)) },
     data: { status: TICKET_STATUS_VALUE[input.status] },
   });
 }
