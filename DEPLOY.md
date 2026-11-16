@@ -56,7 +56,7 @@ $env:DATABASE_URL = "postgresql://postgres.<ref>:<db-password>@aws-0-eu-west-3.p
 npx prisma migrate deploy
 ```
 
-Expect `All migrations have been successfully applied.` (7 migrations). This creates every table, enables RLS on all of them, and creates the `app_runtime` role, **with a dev password that is public in this repo**. Do step 4 right away.
+Expect `All migrations have been successfully applied.` (8 migrations). This creates every table, enables RLS on all of them, and creates the `app_runtime` role, **with a dev password that is public in this repo**. Do step 4 right away.
 
 Use `migrate deploy`, never `migrate dev` or `migrate reset`, against Supabase.
 
@@ -190,16 +190,18 @@ select (select count(*) from "Levy") lv, (select count(*) from "ElectricityPurch
        (select count(*) from "User") u;
 rollback;
 
--- 4. Caretaker can't write Unit / Property / Inspection → expect
---    "new row violates row-level security policy for table "Unit""
+-- 4. Caretaker can't write anything sensitive. Each statement must fail with
+--    "new row violates row-level security policy" (inserts) or report 0 rows
+--    (updates/deletes). Run them one at a time, each in its own transaction.
 begin; set local role app_runtime;
 select set_config('app.current_role','CARETAKER',true),
        set_config('app.current_staff_id', (select "staffId" from "User" where role='CARETAKER' limit 1), true);
-update "Unit" set "meterNumber" = "meterNumber";
+update "Lease" set balance = balance;            -- expect: UPDATE 0
+-- also try: update "Tenant" ...; delete from "Payment"; update "Unit" ... (UPDATE 0 / RLS error)
 rollback;
 ```
 
-Note: the original `*_add_rls_policies` policies on Tenant, Lease, Payment and TenantOffboarding let a caretaker context **write** rows on their assigned properties, not just read them. The same test against `"Lease"` succeeds. No caretaker code path writes those tables, and every action that does is landlord-only in the app, but the database itself doesn't enforce landlord-only writes there.
+Caretaker writes are blocked **at the database level** on Tenant, Lease, Payment, TenantOffboarding, Unit, Property and Inspection: a caretaker context can read its assigned properties but never write them, regardless of app code. Only a `LANDLORD` context can write those tables (migration `20261117090000_landlord_only_writes`).
 
 ---
 
