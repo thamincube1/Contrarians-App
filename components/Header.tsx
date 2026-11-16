@@ -38,7 +38,11 @@ export default function Header({ userName }: { userName: string }) {
           Signed in as
         </span>
         <span className="text-[13px] font-extrabold tracking-tight truncate min-w-0">{userName}</span>
-        <Tag label={state.role === "landlord" ? "Landlord" : "Caretaker"} bg="#201e1d" fg="#f3f2f2" />
+        {/* Dropped below 360px (e.g. 320px phones), where the wordmark, menu,
+            name and sign-out already fill the row — the name stays visible. */}
+        <span className="flex flex-none max-[359px]:hidden">
+          <Tag label={state.role === "landlord" ? "Landlord" : "Caretaker"} bg="#201e1d" fg="#f3f2f2" />
+        </span>
         <span className="hidden sm:inline text-xs flex-none" style={{ color: "#605d5d" }}>
           {state.role === "landlord"
             ? "Full access — money, portfolio, deletion"
