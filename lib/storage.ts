@@ -2,20 +2,106 @@ import "server-only";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 
-const ARCHIVE_DIR = path.join(process.cwd(), "storage", "archives");
+// ---- Object storage backend ----
+// Supabase Storage (a private bucket) when SUPABASE_URL,
+// SUPABASE_SERVICE_ROLE_KEY and SUPABASE_STORAGE_BUCKET are all set — which
+// production must, since Vercel's filesystem doesn't persist between
+// invocations. Otherwise local disk under storage/ (gitignored), which is
+// what local development uses with no setup.
+//
+// Talks to the Storage REST API with plain fetch rather than
+// @supabase/supabase-js: four endpoints don't justify the dependency.
+// Every key passed in here is server-built (never raw user input).
+
+const LOCAL_ROOT = path.join(process.cwd(), "storage");
+
+interface SupabaseConfig {
+  url: string;
+  key: string;
+  bucket: string;
+}
+
+function supabaseConfig(): SupabaseConfig | null {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const bucket = process.env.SUPABASE_STORAGE_BUCKET;
+  if (!url || !key || !bucket) return null;
+  return { url: url.replace(/\/+$/, ""), key, bucket };
+}
+
+function supabaseHeaders(cfg: SupabaseConfig): Record<string, string> {
+  // New-style secret keys (sb_secret_…) go in `apikey` only — the gateway
+  // swaps them for a service-role JWT. Legacy JWT service_role keys also
+  // need to be the bearer token.
+  return cfg.key.startsWith("sb_") ? { apikey: cfg.key } : { apikey: cfg.key, Authorization: `Bearer ${cfg.key}` };
+}
+
+function objectPath(cfg: SupabaseConfig, key: string): string {
+  return `${encodeURIComponent(cfg.bucket)}/${key.split("/").map(encodeURIComponent).join("/")}`;
+}
+
+async function putObject(key: string, bytes: Buffer | string, contentType: string): Promise<void> {
+  const cfg = supabaseConfig();
+  if (!cfg) {
+    const file = path.join(LOCAL_ROOT, key);
+    await mkdir(path.dirname(file), { recursive: true });
+    await writeFile(file, bytes);
+    return;
+  }
+  const res = await fetch(`${cfg.url}/storage/v1/object/${objectPath(cfg, key)}`, {
+    method: "POST",
+    headers: { ...supabaseHeaders(cfg), "Content-Type": contentType, "x-upsert": "true" },
+    body: typeof bytes === "string" ? bytes : new Uint8Array(bytes),
+  });
+  if (!res.ok) throw new Error(`Storage upload failed for ${key}: ${res.status} ${await res.text()}`);
+}
+
+async function getObject(key: string): Promise<Buffer | null> {
+  const cfg = supabaseConfig();
+  if (!cfg) {
+    try {
+      return await readFile(path.join(LOCAL_ROOT, key));
+    } catch {
+      return null;
+    }
+  }
+  const res = await fetch(`${cfg.url}/storage/v1/object/authenticated/${objectPath(cfg, key)}`, {
+    headers: supabaseHeaders(cfg),
+    cache: "no-store",
+  });
+  if (!res.ok) return null; // Supabase answers a missing object with 400 or 404
+  return Buffer.from(await res.arrayBuffer());
+}
 
 /**
- * Stores a generated offboarding archive PDF and returns a reference to
- * it. Dev default is local disk under storage/ (gitignored) — swap the
- * body of this function for `@vercel/blob`'s `put()` or an S3
- * `PutObjectCommand` in production. Nothing else needs to change: callers
- * (confirmOffboardAction) only ever see the returned reference, which is
- * what gets stored in TenantOffboarding.archiveUrl.
+ * A time-limited URL for reading one private object — how anything stored
+ * here (archive PDFs, and photos once capture uploads them) should be handed
+ * to a browser. Null on the local-disk backend, which has no URL of its own;
+ * serve those through an authorized route handler instead (see
+ * app/landlord/dev/outbox/pdf/route.ts).
+ */
+export async function createSignedUrl(key: string, expiresInSeconds = 60 * 10): Promise<string | null> {
+  const cfg = supabaseConfig();
+  if (!cfg) return null;
+  const res = await fetch(`${cfg.url}/storage/v1/object/sign/${objectPath(cfg, key)}`, {
+    method: "POST",
+    headers: { ...supabaseHeaders(cfg), "Content-Type": "application/json" },
+    body: JSON.stringify({ expiresIn: expiresInSeconds }),
+  });
+  if (!res.ok) return null;
+  const { signedURL } = (await res.json()) as { signedURL?: string };
+  return signedURL ? `${cfg.url}/storage/v1${signedURL}` : null;
+}
+
+/**
+ * Stores a generated offboarding archive PDF and returns its storage key,
+ * which is what gets saved in TenantOffboarding.archiveUrl — pass it to
+ * createSignedUrl() to open it.
  */
 export async function storeArchivePdf(filename: string, bytes: Buffer): Promise<string> {
-  await mkdir(ARCHIVE_DIR, { recursive: true });
-  await writeFile(path.join(ARCHIVE_DIR, filename), bytes);
-  return `storage/archives/${filename}`;
+  const key = `archives/${filename}`;
+  await putObject(key, bytes, "application/pdf");
+  return key;
 }
 
 // ---- Dev outbox ----
@@ -24,14 +110,13 @@ export async function storeArchivePdf(filename: string, bytes: Buffer): Promise<
 // just trusting a console log line. Not used once a real API key is set —
 // see sendEmailWithAttachment in lib/email.ts.
 
-const OUTBOX_DIR = path.join(process.cwd(), "storage", "outbox");
-const OUTBOX_INDEX = path.join(OUTBOX_DIR, "index.json");
+const OUTBOX_INDEX = "outbox/index.json";
 
 export interface OutboxEntry {
   to: string;
   subject: string;
   sentAt: string; // ISO timestamp
-  filename: string; // basename under storage/outbox/
+  filename: string; // basename under outbox/
 }
 
 /** Sanitizes a free-form label (a unit code, a tenant name, …) into a filename-safe chunk. */
@@ -44,7 +129,17 @@ function slugForFilename(label: string): string {
   );
 }
 
-/** Stores one dev-outbox PDF and appends a record to the index, returning the saved filename. */
+async function readOutboxIndex(): Promise<OutboxEntry[]> {
+  const raw = await getObject(OUTBOX_INDEX);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw.toString("utf8"));
+  } catch {
+    return []; // corrupt — start fresh rather than fail the send
+  }
+}
+
+/** Stores one dev-outbox PDF and appends a record to the index, returning the saved entry. */
 export async function storeOutboxEmail(input: {
   to: string;
   subject: string;
@@ -52,45 +147,30 @@ export async function storeOutboxEmail(input: {
   label: string;
   pdf: Buffer;
 }): Promise<OutboxEntry> {
-  await mkdir(OUTBOX_DIR, { recursive: true });
-
   const now = new Date();
   const datePrefix = now.toISOString().slice(0, 10); // YYYY-MM-DD
   const filename = `${datePrefix}_${slugForFilename(input.kind)}_${slugForFilename(input.label)}.pdf`;
 
-  await writeFile(path.join(OUTBOX_DIR, filename), input.pdf);
+  await putObject(`outbox/${filename}`, input.pdf, "application/pdf");
 
   const entry: OutboxEntry = { to: input.to, subject: input.subject, sentAt: now.toISOString(), filename };
-
-  let entries: OutboxEntry[] = [];
-  try {
-    entries = JSON.parse(await readFile(OUTBOX_INDEX, "utf8"));
-  } catch {
-    // No index yet, or it's corrupt — start fresh rather than fail the send.
-  }
+  // Read-modify-write without locking: two simultaneous sends can drop an
+  // index line. Acceptable for a dev-only log; the PDFs themselves survive.
+  const entries = await readOutboxIndex();
   entries.push(entry);
-  await writeFile(OUTBOX_INDEX, JSON.stringify(entries, null, 2));
+  await putObject(OUTBOX_INDEX, JSON.stringify(entries, null, 2), "application/json");
 
   return entry;
 }
 
 /** Newest-first list of everything storeOutboxEmail has recorded. */
 export async function listOutboxEmails(): Promise<OutboxEntry[]> {
-  try {
-    const entries: OutboxEntry[] = JSON.parse(await readFile(OUTBOX_INDEX, "utf8"));
-    return entries.slice().reverse();
-  } catch {
-    return [];
-  }
+  return (await readOutboxIndex()).reverse();
 }
 
 /** Reads one outbox PDF by its exact (already-sanitized) filename, or null if it doesn't exist / isn't indexed. */
 export async function readOutboxPdf(filename: string): Promise<Buffer | null> {
-  const entries = await listOutboxEmails();
+  const entries = await readOutboxIndex();
   if (!entries.some((e) => e.filename === filename)) return null; // only ever serve known, indexed files
-  try {
-    return await readFile(path.join(OUTBOX_DIR, filename));
-  } catch {
-    return null;
-  }
+  return getObject(`outbox/${filename}`);
 }

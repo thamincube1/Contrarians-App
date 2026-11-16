@@ -5,8 +5,9 @@ import { listOutboxEmails } from "@/lib/storage";
 // Dev-only: lets a developer actually open the PDFs lib/email.ts logs
 // instead of sending while RESEND_API_KEY is unset. The /landlord layout
 // already redirects non-landlords away; the role check below is just
-// defense-in-depth for this specific page. Reads live off disk on every
-// request so a just-sent email shows up immediately.
+// defense-in-depth for this specific page. Reads the outbox index (local
+// disk, or the Supabase bucket if configured — see lib/storage.ts) on
+// every request so a just-sent email shows up immediately.
 export const dynamic = "force-dynamic";
 
 export default async function DevOutboxPage() {

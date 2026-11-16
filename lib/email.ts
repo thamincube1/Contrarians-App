@@ -21,7 +21,9 @@ export interface SendEmailResult {
 /**
  * Sends an email with one PDF attachment via Resend, or — when
  * RESEND_API_KEY isn't set — logs what would have been sent instead and
- * mirrors the PDF to storage/outbox/ (see lib/storage.ts) so it can
+ * mirrors the PDF to the outbox/ prefix of object storage (local
+ * storage/outbox/ in dev, the Supabase bucket in production — see
+ * lib/storage.ts) so it can
  * actually be opened, via the /landlord/dev/outbox page. This is the
  * dev-safe path: no real API key is needed to exercise statement/invoice/
  * demand generation locally, and nothing here has to change to go live
@@ -45,7 +47,7 @@ export async function sendEmailWithAttachment(input: {
       label: input.label,
       pdf: input.attachment.content,
     });
-    const outboxPath = `storage/outbox/${entry.filename}`;
+    const outboxPath = `outbox/${entry.filename}`;
     console.log(
       `[email:dev-mode] to=${input.to} subject="${input.subject}" attachment=${input.attachment.filename} ` +
         `(${input.attachment.content.length} bytes) saved to ${outboxPath} — set RESEND_API_KEY to actually send`
