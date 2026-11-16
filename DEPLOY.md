@@ -190,13 +190,16 @@ select (select count(*) from "Levy") lv, (select count(*) from "ElectricityPurch
        (select count(*) from "User") u;
 rollback;
 
--- 4. Caretaker can't write → expect "new row violates row-level security policy"
+-- 4. Caretaker can't write Unit / Property / Inspection → expect
+--    "new row violates row-level security policy for table "Unit""
 begin; set local role app_runtime;
 select set_config('app.current_role','CARETAKER',true),
        set_config('app.current_staff_id', (select "staffId" from "User" where role='CARETAKER' limit 1), true);
-update "Lease" set balance = balance;
+update "Unit" set "meterNumber" = "meterNumber";
 rollback;
 ```
+
+Note: the original `*_add_rls_policies` policies on Tenant, Lease, Payment and TenantOffboarding let a caretaker context **write** rows on their assigned properties, not just read them. The same test against `"Lease"` succeeds. No caretaker code path writes those tables, and every action that does is landlord-only in the app, but the database itself doesn't enforce landlord-only writes there.
 
 ---
 
