@@ -1,14 +1,45 @@
 // Seeds the database with the exact dataset the app used to generate in
 // memory (see the retired lib/mock-data.ts), so the UI looks identical
 // after switching from mock state to Postgres.
+//
+// Demo data only: every tenant name, phone number, meter and amount below
+// is generated, and tenant emails are @example.com. Safe to load into a
+// shared demo database. Run it on an empty database (after migrate deploy);
+// to wipe and reload, use `npm run db:demo-reset` (prisma/demo-reset.ts).
 
+import "dotenv/config";
 import { PrismaClient, ReportedVia, TicketPriority, TicketStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-// Dev-only fixed credentials — see README for the login screen.
+// Dev-only fixed credentials — see README for the login screen. This
+// password is public (it's in the repo), so it's only allowed against a
+// local database; anywhere else SEED_PASSWORD must be set.
 const DEV_PASSWORD = "hauswerk-dev";
+
+function isLocalDatabase(): boolean {
+  try {
+    const host = new URL(process.env.DATABASE_URL ?? "").hostname;
+    return host === "localhost" || host === "127.0.0.1" || host === "::1";
+  } catch {
+    return false;
+  }
+}
+
+function loginPassword(): string {
+  const fromEnv = process.env.SEED_PASSWORD;
+  if (fromEnv) {
+    if (fromEnv.length < 12) throw new Error("SEED_PASSWORD must be at least 12 characters.");
+    return fromEnv;
+  }
+  if (!isLocalDatabase()) {
+    throw new Error(
+      "Refusing to seed a non-local database with the public dev password — set SEED_PASSWORD to the demo login password."
+    );
+  }
+  return DEV_PASSWORD;
+}
 
 const NAMES = [
   "A. Botha", "S. Mokoena", "T. Nkosi", "M. Louw", "P. Dlamini", "J. Steenkamp",
@@ -49,6 +80,16 @@ function parseDayMonthYear(s: string): Date {
 }
 
 async function main() {
+  // Resolved before writing anything, so a missing SEED_PASSWORD can't
+  // leave a half-seeded database behind.
+  const password = loginPassword();
+
+  // Plain creates throughout, so a second run would fail partway on unique
+  // constraints — stop cleanly instead.
+  if ((await prisma.property.count()) > 0) {
+    throw new Error("Database already has data — run `npm run db:demo-reset` to wipe and reseed it.");
+  }
+
   console.log("Seeding…");
 
   // ---- Properties ----
@@ -163,7 +204,7 @@ async function main() {
   });
 
   // ---- Dev logins ----
-  const passwordHash = await bcrypt.hash(DEV_PASSWORD, 10);
+  const passwordHash = await bcrypt.hash(password, 10);
   await prisma.user.create({
     data: { email: "brandt@hauswerk.dev", passwordHash, role: "LANDLORD", staffId: brandt.id },
   });
