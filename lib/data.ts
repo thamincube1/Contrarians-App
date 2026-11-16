@@ -297,12 +297,18 @@ export interface InitialData {
 }
 
 export async function getInitialData(actor: RlsActor): Promise<InitialData> {
+  // Levy and ElectricityPurchase are read through the owner connection (no
+  // RLS applies), and everything returned here is serialised into the page
+  // payload — so caretakers must never be handed them, not merely have them
+  // hidden by the UI. Only landlord screens render either list.
+  const isLandlord = actor.role === "LANDLORD";
+  const empty = { base: [], extra: [] };
   const [units, tickets, inspections, levies, electricity, staff, properties] = await Promise.all([
     getUnits(actor),
     getTickets(),
     getInspections(),
-    getLevies(),
-    getElectricityPurchases(),
+    isLandlord ? getLevies() : empty,
+    isLandlord ? getElectricityPurchases() : empty,
     getStaff(),
     getProperties(),
   ]);
