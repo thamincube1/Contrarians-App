@@ -15,7 +15,7 @@ export default async function LoginPage() {
       <div className="w-full max-w-[380px]">
         <div className="flex items-center gap-2.5 mb-8 justify-center">
           <div className="w-3.5 h-3.5 rounded-[4px]" style={{ background: "#ec3013" }} />
-          <div className="font-extrabold text-[15px] tracking-tight">HAUSWERK</div>
+          <div className="font-extrabold text-[15px] tracking-tight">CONTRARIANS</div>
           <div className="text-[11px] tracking-[0.08em] uppercase" style={{ color: "#605d5d" }}>
             Internal ops
           </div>

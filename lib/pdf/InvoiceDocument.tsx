@@ -26,7 +26,7 @@ export function InvoiceDocument({ data }: { data: InvoiceData }) {
       <Page size="A4" style={styles.page}>
         <View style={styles.brandRow}>
           <View>
-            <Text style={styles.brandMark}>HAUSWERK</Text>
+            <Text style={styles.brandMark}>CONTRARIANS</Text>
             <Text style={styles.brandSub}>Internal ops · {data.propertyName}</Text>
           </View>
           <View style={styles.docMeta}>
@@ -76,7 +76,7 @@ export function InvoiceDocument({ data }: { data: InvoiceData }) {
         </View>
 
         <Text style={styles.footer}>
-          HAUSWERK Internal Ops · This is a system-generated invoice and does not require a signature. Prepaid
+          Contrarians Properties Internal Ops · This is a system-generated invoice and does not require a signature. Prepaid
           electricity is billed separately at the meter.
         </Text>
       </Page>

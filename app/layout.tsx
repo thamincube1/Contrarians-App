@@ -3,10 +3,10 @@ import "./globals.css";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 
 export const metadata: Metadata = {
-  title: "HAUSWERK — Internal ops",
-  description: "Internal operations tool for the Hauswerk residential portfolio",
+  title: "Contrarians Properties — Internal ops",
+  description: "Internal operations tool for the Contrarians Properties residential portfolio",
   appleWebApp: {
-    title: "HAUSWERK",
+    title: "Contrarians",
     statusBarStyle: "default",
   },
   icons: {

@@ -51,7 +51,7 @@ export function ArchiveDocument({ data }: { data: ArchiveData }) {
       <Page size="A4" style={styles.page}>
         <View style={styles.brandRow}>
           <View>
-            <Text style={styles.brandMark}>HAUSWERK</Text>
+            <Text style={styles.brandMark}>CONTRARIANS</Text>
             <Text style={styles.brandSub}>Internal ops · {data.propertyName}</Text>
           </View>
           <View style={styles.docMeta}>
@@ -171,7 +171,7 @@ export function ArchiveDocument({ data }: { data: ArchiveData }) {
         </View>
 
         <Text style={styles.footer}>
-          HAUSWERK Internal Ops · Generated automatically as part of the offboarding transaction. Retain for
+          Contrarians Properties Internal Ops · Generated automatically as part of the offboarding transaction. Retain for
           financial and compliance record-keeping.
         </Text>
       </Page>

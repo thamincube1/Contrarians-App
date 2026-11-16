@@ -1,4 +1,4 @@
-// HAUSWERK operations app — data model.
+// Contrarians Properties operations app — data model.
 // Mirrors the shapes the UI already consumes (see lib/mock-data.ts, now
 // retired) so the read/write layer in lib/data.ts and lib/actions.ts can
 // map straight onto what the components already render.

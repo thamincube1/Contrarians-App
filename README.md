@@ -1,4 +1,4 @@
-# HAUSWERK — Internal Operations App
+# Contrarians Properties — Internal Operations App
 
 An internal operations tool for a 92-unit residential portfolio, used by two staff
 roles — **Landlord** (full access: money, portfolio, deletion) and **Caretaker**

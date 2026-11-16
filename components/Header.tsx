@@ -28,7 +28,7 @@ export default function Header({ userName }: { userName: string }) {
         style={{ borderColor: "var(--hairline-soft)" }}
       >
         <div className="w-3.5 h-3.5 rounded-[4px] flex-none" style={{ background: "#ec3013" }} />
-        <div className="font-extrabold text-[15px] tracking-tight flex-none">HAUSWERK</div>
+        <div className="font-extrabold text-[15px] tracking-tight flex-none">CONTRARIANS</div>
         <div className="hidden sm:block text-[11px] tracking-[0.08em] uppercase" style={{ color: "#605d5d" }}>
           Internal ops
         </div>

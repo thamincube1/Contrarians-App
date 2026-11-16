@@ -38,7 +38,7 @@ export function StatementDocument({ data, variant = "statement" }: { data: State
       <Page size="A4" style={styles.page}>
         <View style={styles.brandRow}>
           <View>
-            <Text style={styles.brandMark}>HAUSWERK</Text>
+            <Text style={styles.brandMark}>CONTRARIANS</Text>
             <Text style={styles.brandSub}>Internal ops · {data.propertyName}</Text>
           </View>
           <View style={styles.docMeta}>
@@ -122,7 +122,7 @@ export function StatementDocument({ data, variant = "statement" }: { data: State
         </View>
 
         <Text style={styles.footer}>
-          HAUSWERK Internal Ops · This is a system-generated {isDemand ? "letter of demand" : "statement"} and does
+          Contrarians Properties Internal Ops · This is a system-generated {isDemand ? "letter of demand" : "statement"} and does
           not require a signature.
         </Text>
       </Page>

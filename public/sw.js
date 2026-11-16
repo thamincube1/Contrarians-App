@@ -12,7 +12,7 @@
 //    passthrough — never intercepted, so auth and data mutations always
 //    hit the network and fail honestly when truly offline (the outbox in
 //    lib/outbox.ts is what makes those safe to retry).
-const CACHE_NAME = "hauswerk-shell-v1";
+const CACHE_NAME = "contrarians-shell-v1";
 const PRECACHE_URLS = ["/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {

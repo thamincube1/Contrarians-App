@@ -2,7 +2,7 @@ import "server-only";
 import { Resend } from "resend";
 import { storeOutboxEmail } from "./storage";
 
-const FROM = process.env.RESEND_FROM_EMAIL || "HAUSWERK <onboarding@resend.dev>";
+const FROM = process.env.RESEND_FROM_EMAIL || "Contrarians Properties <onboarding@resend.dev>";
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export interface EmailAttachment {

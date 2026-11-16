@@ -104,7 +104,7 @@ export default function Sidebar() {
             }}
           >
             <div className="flex items-center justify-between px-4 pb-3">
-              <div className="font-extrabold text-[15px] tracking-tight">HAUSWERK</div>
+              <div className="font-extrabold text-[15px] tracking-tight">CONTRARIANS</div>
               <button
                 type="button"
                 onClick={closeMobileNav}

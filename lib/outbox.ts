@@ -22,7 +22,10 @@ export interface OutboxItem {
   lastError?: string;
 }
 
-const DB_NAME = "hauswerk-outbox";
+// Renaming this string orphans any items already queued in a caretaker's
+// browser under the old name — fine pre-launch, worth a flush-first notice
+// to caretakers if this ever changes post-launch with real queued data.
+const DB_NAME = "contrarians-outbox";
 const DB_VERSION = 1;
 const STORE = "items";
 

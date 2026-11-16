@@ -5,9 +5,9 @@ import type { MetadataRoute } from "next";
 // in components/caretaker/DesignNotes.tsx and README.md.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "HAUSWERK — Internal Ops",
-    short_name: "HAUSWERK",
-    description: "Internal operations app for the Hauswerk residential portfolio",
+    name: "Contrarians Properties — Internal Ops",
+    short_name: "Contrarians",
+    description: "Internal operations app for the Contrarians Properties residential portfolio",
     start_url: "/caretaker",
     scope: "/",
     display: "standalone",
